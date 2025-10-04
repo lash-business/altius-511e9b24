@@ -52,10 +52,10 @@ export function Home() {
                 Get started with your personalized training
               </p>
               <div className="flex gap-4 justify-center">
-                <Link to="/auth/login">
+                <Link to="/auth?tab=login">
                   <Button>Login</Button>
                 </Link>
-                <Link to="/auth/signup">
+                <Link to="/auth?tab=signup">
                   <Button variant="outline">Sign Up</Button>
                 </Link>
               </div>
