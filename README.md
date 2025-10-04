@@ -1,73 +1,190 @@
-# Welcome to your Lovable project
+# Altius - Sports Science PWA
 
-## Project info
+A production-grade Progressive Web App for sports science, built with modern web technologies.
 
-**URL**: https://lovable.dev/projects/6e4f615e-7369-4ced-8e97-db52748d84b8
+## 🚀 Tech Stack
 
-## How can I edit this code?
+- **Framework**: React 18 + Vite
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS with custom design system
+- **UI Components**: shadcn/ui
+- **Icons**: lucide-react
+- **Routing**: React Router v6
+- **Testing**: Vitest + Testing Library
+- **PWA**: vite-plugin-pwa with Workbox
 
-There are several ways of editing your application.
+## 📋 Prerequisites
 
-**Use Lovable**
+- **Node.js**: >= 20.11.0 (see `.nvmrc`)
+- **Package Manager**: pnpm (v8+)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6e4f615e-7369-4ced-8e97-db52748d84b8) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+To use the correct Node version:
+```bash
+nvm use
 ```
 
-**Edit a file directly in GitHub**
+## 🛠️ Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Install dependencies
+```bash
+pnpm install
+```
 
-**Use GitHub Codespaces**
+### Start development server
+```bash
+pnpm dev
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Build for production
+```bash
+pnpm build
+```
 
-## What technologies are used for this project?
+### Preview production build
+```bash
+pnpm preview
+```
 
-This project is built with:
+### Run tests
+```bash
+pnpm test
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Type checking
+```bash
+pnpm typecheck
+```
 
-## How can I deploy this project?
+### Linting & Formatting
+```bash
+pnpm lint
+pnpm format
+```
 
-Simply open [Lovable](https://lovable.dev/projects/6e4f615e-7369-4ced-8e97-db52748d84b8) and click on Share -> Publish.
+## 🏗️ Project Structure
 
-## Can I connect a custom domain to my Lovable project?
+```
+src/
+├── app/
+│   └── providers/         # Context providers (Theme, etc.)
+├── components/
+│   ├── ui/               # shadcn/ui components
+│   └── common/           # Shared components (Header, Footer, etc.)
+├── pages/                # Route pages
+├── routes/               # Routing configuration
+├── lib/                  # Utilities and clients
+├── styles/               # Global styles
+└── tests/                # Test files
+```
 
-Yes, you can!
+## 🏥 Health Checks
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Runtime Health Check
+Navigate to `/health` to see application status and version:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```json
+{
+  "status": "ok",
+  "version": "0.1.0",
+  "timestamp": "2025-10-04T..."
+}
+```
+
+### Static Health Check
+The build process generates `public/health.json` with:
+- Application status
+- Version from package.json
+- Build timestamp
+
+This file can be used by monitoring systems and load balancers.
+
+## ♿ Accessibility
+
+- **Skip Link**: Jump directly to main content
+- **Focus Management**: Visible focus rings for keyboard navigation
+- **ARIA Landmarks**: Semantic HTML with proper roles
+- **Theme Preferences**: Respects system color scheme
+
+## 📱 Progressive Web App
+
+### Features
+- **Installable**: Add to home screen
+- **Offline Ready**: Service worker with app shell caching
+- **Fast**: Optimized bundle with code splitting
+- **Responsive**: Perfect rendering from 360px to 4K
+
+### PWA Configuration
+- Manifest: `public/manifest.json`
+- Icons: 192x192 and 512x512 (maskable)
+- Service Worker: Auto-updates on new versions
+
+## 🧪 Testing
+
+Run the full test suite:
+```bash
+pnpm test
+```
+
+Tests include:
+- Component rendering
+- Accessibility features
+- Routing behavior
+- Build-time asset verification
+
+## 📊 Lighthouse Scores
+
+Target scores (mobile):
+- **Performance**: >= 95
+- **Accessibility**: >= 95
+- **Best Practices**: >= 95
+- **SEO**: >= 90
+- **PWA**: Passing
+
+Run Lighthouse audit:
+```bash
+pnpm build && pnpm preview
+# Open Chrome DevTools > Lighthouse > Generate Report
+```
+
+## 🔐 Security
+
+- TypeScript strict mode with `noUncheckedIndexedAccess`
+- ESLint with security best practices
+- Environment variables for sensitive data
+- RLS-ready architecture (Step 2)
+
+## 🔮 Roadmap
+
+### Step 1: Foundation ✅
+- Project scaffolding
+- PWA setup
+- Design system
+- Testing infrastructure
+
+### Step 2: Backend Integration (Next)
+- Supabase connection
+- Row Level Security (RLS) policies
+- Authentication system
+- Database schema
+
+### Future Steps
+- User profiles
+- Data visualization
+- Real-time features
+- Advanced analytics
+
+## 🤝 Contributing
+
+This project uses:
+- **ESLint** for code quality
+- **Prettier** for formatting
+- **Husky** for pre-commit hooks
+- **GitHub Actions** for CI/CD
+
+## 📄 License
+
+Copyright © 2025 Altius. All rights reserved.
+
+---
+
+**Next Step**: Ready to connect Supabase with Row Level Security? See Step 2 documentation.
