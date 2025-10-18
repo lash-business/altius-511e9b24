@@ -5,6 +5,8 @@ import { Health } from "@/pages/Health";
 import { Auth } from "@/pages/auth/Auth";
 import { Reset } from "@/pages/auth/Reset";
 import { Callback } from "@/pages/auth/Callback";
+import { Onboarding } from "@/pages/Onboarding";
+import { Stats } from "@/pages/Stats";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -12,6 +14,8 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/home" element={<Training />} />
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/stats" element={<Stats />} />
       <Route path="/health" element={<Health />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/login" element={<Auth />} />
