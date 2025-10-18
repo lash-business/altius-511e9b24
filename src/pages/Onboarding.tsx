@@ -99,8 +99,8 @@ export function Onboarding() {
       .select("id")
       .eq("muscle_group", muscleGroup)
       .eq("gender", gender)
-      .lte("min_age", age)
-      .gte("max_age", age)
+      .gte("min_age", age)
+      .lte("max_age", age)
       .limit(1)
       .single();
 
