@@ -94,18 +94,39 @@ export function Onboarding() {
   };
 
   const findNormRatioId = async (muscleGroup: "quad" | "ham" | "glute" | "abductor", age: number, gender: "male" | "female") => {
+    console.log(`🔍 Finding norm ratio for:`, {
+      muscleGroup,
+      age,
+      gender
+    });
+
     const { data: normRatios, error } = await supabase
       .from("norm_ratios")
-      .select("id")
+      .select("id, min_age, max_age, muscle_group, gender")
       .eq("muscle_group", muscleGroup)
       .eq("gender", gender)
-      .gte("min_age", age)
-      .lte("max_age", age)
-      .limit(1)
-      .single();
+      .lte("min_age", age)
+      .gte("max_age", age)
+      .limit(1);
 
-    if (error || !normRatios) return null;
-    return normRatios.id;
+    console.log(`📊 Query result:`, {
+      data: normRatios,
+      error: error,
+      foundRecords: normRatios?.length || 0
+    });
+
+    if (error) {
+      console.error("❌ Norm ratio query error:", error);
+      return null;
+    }
+    
+    if (!normRatios || normRatios.length === 0) {
+      console.warn(`⚠️ No norm ratio found for ${muscleGroup}, age ${age}, gender ${gender}`);
+      return null;
+    }
+    
+    console.log(`✅ Found norm ratio ID:`, normRatios[0].id);
+    return normRatios[0].id;
   };
 
   const handleFinish = async () => {
