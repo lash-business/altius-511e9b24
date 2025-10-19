@@ -13,9 +13,8 @@ const queryClient = new QueryClient();
 function AppContent() {
   const location = useLocation();
   const isAuthRoute = location.pathname.startsWith("/auth");
-  const isStandalonePage = location.pathname === "/profile";
 
-  if (isAuthRoute || isStandalonePage) {
+  if (isAuthRoute) {
     return <AppRoutes />;
   }
 
