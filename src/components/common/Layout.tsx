@@ -11,11 +11,13 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const showBottomNav = location.pathname === "/home" || location.pathname === "/stats";
+  const closeRoutes = new Set(["/profile"]);
+  const variant = closeRoutes.has(location.pathname) ? "close" : "default";
 
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
-      <Header />
+      <Header variant={variant} />
       <main
         id="main-content"
         className={showBottomNav ? "flex-1 pb-20" : "flex-1"}
