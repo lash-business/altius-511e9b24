@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/common/Header";
-import { SkipLink } from "@/components/common/SkipLink";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ProfileFormSection } from "@/components/profile/ProfileFormSection";
@@ -156,9 +154,7 @@ export function Profile() {
 
   return (
     <>
-      <SkipLink />
-      <Header variant="close" />
-      <main id="main-content" className="container max-w-md mx-auto py-8 px-4 space-y-6">
+      <div className="container max-w-md mx-auto py-8 px-4 space-y-6">
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarFallback>{getInitials()}</AvatarFallback>
@@ -261,7 +257,7 @@ export function Profile() {
             Delete Account
           </Button>
         </div>
-      </main>
+      </div>
     </>
   );
 }
