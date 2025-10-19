@@ -1,4 +1,3 @@
-// FORCE DEPLOY: 2025-10-18T15:30:00Z
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
