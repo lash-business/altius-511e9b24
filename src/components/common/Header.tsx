@@ -4,7 +4,7 @@ import { Activity } from "lucide-react";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-center">
         <Link 
           to="/" 
           className="flex items-center gap-2 font-semibold text-lg transition-smooth hover:text-primary focus-visible:text-primary"
@@ -13,10 +13,6 @@ export function Header() {
           <Activity className="h-6 w-6 text-primary" aria-hidden="true" />
           <span>Altius</span>
         </Link>
-
-        <nav aria-label="Main navigation" className="flex items-center gap-4">
-          {/* Navigation items will be added in future steps */}
-        </nav>
       </div>
     </header>
   );
