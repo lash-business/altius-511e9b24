@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Activity } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   return (
@@ -17,7 +16,6 @@ export function Header() {
 
         <nav aria-label="Main navigation" className="flex items-center gap-4">
           {/* Navigation items will be added in future steps */}
-          <ThemeToggle />
         </nav>
       </div>
     </header>
