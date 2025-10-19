@@ -9,9 +9,10 @@ interface HamstringsStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function HamstringsStep({ data, updateData, onNext, onBack }: HamstringsStepProps) {
+export function HamstringsStep({ data, updateData, onNext, onBack, stepLabel }: HamstringsStepProps) {
   const isValid = data.leftHamstring && data.rightHamstring && 
     parseFloat(data.leftHamstring) > 0 && 
     parseFloat(data.rightHamstring) > 0;
@@ -66,7 +67,7 @@ export function HamstringsStep({ data, updateData, onNext, onBack }: HamstringsS
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 8 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 8 of 9"}</p>
       </CardContent>
     </Card>
   );

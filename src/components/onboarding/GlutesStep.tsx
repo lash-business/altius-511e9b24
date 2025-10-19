@@ -9,9 +9,10 @@ interface GlutesStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function GlutesStep({ data, updateData, onNext, onBack }: GlutesStepProps) {
+export function GlutesStep({ data, updateData, onNext, onBack, stepLabel }: GlutesStepProps) {
   const isValid = data.leftGlute && data.rightGlute && 
     parseFloat(data.leftGlute) > 0 && 
     parseFloat(data.rightGlute) > 0;
@@ -66,7 +67,7 @@ export function GlutesStep({ data, updateData, onNext, onBack }: GlutesStepProps
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 8 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 8 of 9"}</p>
       </CardContent>
     </Card>
   );

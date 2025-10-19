@@ -8,6 +8,7 @@ import { Callback } from "@/pages/auth/Callback";
 import { Onboarding } from "@/pages/Onboarding";
 import { Stats } from "@/pages/Stats";
 import { Profile } from "@/pages/Profile";
+import { Test } from "@/pages/Test";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -17,6 +18,7 @@ export function AppRoutes() {
       <Route path="/home" element={<Training />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/stats" element={<Stats />} />
+      <Route path="/test" element={<Test />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/health" element={<Health />} />
       <Route path="/auth" element={<Auth />} />

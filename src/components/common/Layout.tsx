@@ -11,7 +11,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const showBottomNav = location.pathname === "/home" || location.pathname === "/stats";
-  const closeRoutes = new Set(["/profile"]);
+  const closeRoutes = new Set(["/profile", "/test"]);
   const variant = closeRoutes.has(location.pathname) ? "close" : "default";
 
   return (

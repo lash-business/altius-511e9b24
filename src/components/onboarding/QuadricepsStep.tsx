@@ -9,9 +9,10 @@ interface QuadricepsStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function QuadricepsStep({ data, updateData, onNext, onBack }: QuadricepsStepProps) {
+export function QuadricepsStep({ data, updateData, onNext, onBack, stepLabel }: QuadricepsStepProps) {
   const isValid = data.leftQuad && data.rightQuad && 
     parseFloat(data.leftQuad) > 0 && 
     parseFloat(data.rightQuad) > 0;
@@ -66,7 +67,7 @@ export function QuadricepsStep({ data, updateData, onNext, onBack }: QuadricepsS
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 7 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 7 of 9"}</p>
       </CardContent>
     </Card>
   );

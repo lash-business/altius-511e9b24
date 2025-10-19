@@ -10,9 +10,10 @@ interface AbductorsStepProps {
   onFinish: () => void;
   onBack: () => void;
   isSubmitting: boolean;
+  stepLabel?: string;
 }
 
-export function AbductorsStep({ data, updateData, onFinish, onBack, isSubmitting }: AbductorsStepProps) {
+export function AbductorsStep({ data, updateData, onFinish, onBack, isSubmitting, stepLabel }: AbductorsStepProps) {
   const isValid = data.leftAbductor && data.rightAbductor && 
     parseFloat(data.leftAbductor) > 0 && 
     parseFloat(data.rightAbductor) > 0;
@@ -67,7 +68,7 @@ export function AbductorsStep({ data, updateData, onFinish, onBack, isSubmitting
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 9 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 9 of 9"}</p>
       </CardContent>
     </Card>
   );

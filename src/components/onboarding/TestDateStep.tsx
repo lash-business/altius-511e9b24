@@ -13,9 +13,10 @@ interface TestDateStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function TestDateStep({ data, updateData, onNext, onBack }: TestDateStepProps) {
+export function TestDateStep({ data, updateData, onNext, onBack, stepLabel }: TestDateStepProps) {
   const isValid = !!data.testDate;
 
   return (
@@ -65,7 +66,7 @@ export function TestDateStep({ data, updateData, onNext, onBack }: TestDateStepP
           Next
         </Button>
 
-        <p className="text-center text-sm text-muted-foreground">Step 6 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 6 of 9"}</p>
       </CardContent>
     </Card>
   );
