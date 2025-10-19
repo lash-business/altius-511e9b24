@@ -1,11 +1,17 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
+import { Header } from "@/components/common/Header";
+import { SkipLink } from "@/components/common/SkipLink";
 
 export function Profile() {
   const { user } = useAuth();
 
   return (
-    <div className="container flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
+    <div className="flex min-h-screen flex-col">
+      <SkipLink />
+      <Header variant="back" />
+      <main id="main-content" className="flex-1" role="main">
+        <div className="container flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
       <Card className="w-full max-w-3xl border-2 shadow-lg">
         <CardContent className="p-10 text-center space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Profile</h1>
@@ -17,6 +23,8 @@ export function Profile() {
           </p>
         </CardContent>
       </Card>
+        </div>
+      </main>
     </div>
   );
 }

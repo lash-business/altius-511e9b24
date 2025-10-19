@@ -1,11 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Activity } from "lucide-react";
+import { Activity, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export function Header() {
+type HeaderVariant = "default" | "back" | "minimal";
+
+interface HeaderProps {
+  variant?: HeaderVariant;
+}
+
+export function Header({ variant = "default" }: HeaderProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userInitials, setUserInitials] = useState<string>("");
@@ -46,9 +53,18 @@ export function Header() {
           <span>Altius</span>
         </Link>
 
-        {/* Right avatar */}
+        {/* Right content - variant dependent */}
         <div className="flex justify-end">
-          {user && userInitials && (
+          {variant === "back" ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          ) : variant === "default" && user && userInitials ? (
             <Avatar
               className="cursor-pointer transition-smooth hover:ring-2 hover:ring-primary"
               onClick={() => navigate("/profile")}
@@ -57,7 +73,7 @@ export function Header() {
                 {userInitials}
               </AvatarFallback>
             </Avatar>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
