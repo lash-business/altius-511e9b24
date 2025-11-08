@@ -135,6 +135,13 @@ export function Test() {
       const { error: measurementError } = await supabase.from("measurements").insert(inserts);
       if (measurementError) throw measurementError;
 
+      // Generate workouts for this test (idempotent on server)
+      const { data: genCount, error: rpcError } = await supabase.rpc(
+        "generate_workouts_for_test",
+        { p_test_id: testRow.id }
+      );
+      if (rpcError) throw rpcError;
+
       toast({ title: "Test saved", description: "Your measurements have been recorded." });
       navigate("/stats");
     } catch (error) {

@@ -201,6 +201,13 @@ export function Onboarding() {
 
       if (measurementError) throw measurementError;
 
+      // Generate workouts for this test (idempotent on server)
+      const { data: genCount, error: rpcError } = await supabase.rpc(
+        "generate_workouts_for_test",
+        { p_test_id: testData.id }
+      );
+      if (rpcError) throw rpcError;
+
       toast({
         title: "Onboarding Complete!",
         description: "Your profile and test data have been saved.",
