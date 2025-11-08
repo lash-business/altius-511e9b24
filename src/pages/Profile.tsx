@@ -1,4 +1,3 @@
-//FORCE UPDATE: 2025-10-19 14:45:00
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -90,7 +89,7 @@ export function Profile() {
 
     // Update auth.users table
     const { error } = await supabase.auth.updateUser({ email: newEmail });
-    
+
     if (error) throw error;
 
     toast({
@@ -174,17 +173,8 @@ export function Profile() {
             value={profile.last_name}
             onSave={(value) => updateUserField("last_name", value)}
           />
-          <AutoSaveInput
-            label="Update Email"
-            value={profile.email}
-            onSave={handleEmailUpdate}
-            type="email"
-          />
-          <Button
-            onClick={handleResetPassword}
-            disabled={isResettingPassword}
-            className="w-full"
-          >
+          <AutoSaveInput label="Update Email" value={profile.email} onSave={handleEmailUpdate} type="email" />
+          <Button onClick={handleResetPassword} disabled={isResettingPassword} className="w-full">
             Reset Password
           </Button>
         </ProfileFormSection>
