@@ -481,37 +481,40 @@ export function Stats() {
 
       {/* Strength vs Target & Balance */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-3">
-          <h2 className="text-xl font-bold">Strength vs Target</h2>
-          <p className="text-sm text-muted-foreground">
-            Strength for each muscle on each side, shown as a percentage of your target.
-          </p>
-
-          <div className="w-full h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
-                <RechartsTooltip
-                  formatter={(value: any, key: any) => {
-                    const pct = value as number;
-                    const toTarget = Math.max(0, 100 - pct);
-                    const side = key === "leftPct" ? "Left" : "Right";
-                    return [`${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`, `${side} side`];
-                  }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                />
-                <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--primary))" />
-                <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--accent))" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Strength vs Target</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Strength for each muscle on each side, shown as a percentage of your target.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
+                  <RechartsTooltip
+                    formatter={(value: any, key: any) => {
+                      const pct = value as number;
+                      const toTarget = Math.max(0, 100 - pct);
+                      const side = key === "leftPct" ? "Left" : "Right";
+                      return [`${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`, `${side} side`];
+                    }}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                    }}
+                  />
+                  <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
+                  <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
         {balanceData.length > 0 && (
           <Card className="border-2">

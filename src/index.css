@@ -41,6 +41,11 @@
     --input: 215 15% 88%;
     --ring: 215 85% 35%;
 
+    /* Chart-specific colors (scoped for data visualization) */
+    --chart-left: 215 85% 35%; /* mirrors primary */
+    --chart-right: 185 75% 45%; /* mirrors secondary */
+    --chart-neutral: 215 15% 45%; /* neutral axis/labels if needed */
+
     --radius: 0.5rem;
 
     /* Transitions */
@@ -78,6 +83,11 @@
     --border: 215 20% 20%;
     --input: 215 20% 20%;
     --ring: 215 85% 55%;
+
+    /* Chart-specific colors (dark mode tuning for contrast) */
+    --chart-left: 215 85% 60%; /* brighter blue for dark cards */
+    --chart-right: 185 80% 60%; /* brighter teal/green for dark cards */
+    --chart-neutral: 215 15% 70%;
   }
 }
 

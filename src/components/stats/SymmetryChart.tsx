@@ -1,12 +1,4 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 interface SymmetryData {
   "Muscle Group": string;
@@ -105,7 +97,11 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
             name="Percent difference"
             radius={[4, 4, 4, 4]}
             isAnimationActive={false}
-          />
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={getSymmetryColor(entry.rawDiff01)} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
 
