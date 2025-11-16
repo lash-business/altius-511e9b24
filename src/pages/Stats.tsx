@@ -1,4 +1,3 @@
-// update
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -226,9 +225,8 @@ export function Stats() {
       : 0;
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
-  // Percent Diff and percent_diff come from the DB on a 0–1 scale,
-  // so convert to 0–100 for display.
   const maxSymmetryGap =
+<<<<<<< HEAD
     symmetryData.length > 0
       ? Math.max(
           ...symmetryData.map((item) =>
@@ -245,6 +243,7 @@ export function Stats() {
           ),
         )
       : null;
+=======
 
   const primaryStrengthBullet = (() => {
     if (aggregateStrength.length === 0) return null;
