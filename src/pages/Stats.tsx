@@ -9,7 +9,16 @@ import { Trophy, TrendingUp, Target } from "lucide-react";
 import { SymmetryChart } from "@/components/stats/SymmetryChart";
 import { BalanceChart } from "@/components/stats/BalanceChart";
 import { TrendChart } from "@/components/stats/TrendChart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
 
 interface StrengthData {
   muscle_group: string;
@@ -394,72 +403,180 @@ export function Stats() {
     return selected;
   })();
 
+  const strengthDomainScore =
+    aggregateStrength.length > 0
+      ? aggregateStrength.reduce((sum, item) => sum + (item.relative_score ?? 0), 0) / aggregateStrength.length
+      : null;
+
+  const symmetryDomainScore =
+    symmetryData.length > 0
+      ? symmetryData.reduce((sum, item) => sum + (item["Relative Score"] ?? 0), 0) / symmetryData.length
+      : null;
+
+  const balanceDomainScore =
+    balanceData.length > 0
+      ? balanceData.reduce((sum, item) => sum + (item.relative_score ?? 0), 0) / balanceData.length
+      : null;
+
+  const domainScoreLabel = (score: number | null) =>
+    score == null ? "—" : `${Math.round(Math.max(0, Math.min(100, score)))} / 100`;
+
+  const trendDelta =
+    trendData.length > 1 ? trendData[trendData.length - 1].normPercent - trendData[0].normPercent : null;
+
+  const trendDirectionLabel = (() => {
+    if (trendDelta == null) return null;
+    const delta = Math.round(trendDelta);
+    if (delta >= 3) return `Improving (+${delta}% vs first test)`;
+    if (delta <= -3) return `Regressing (${delta}% vs first test)`;
+    if (Math.abs(delta) > 0) return `Stable (±${Math.abs(delta)}% vs first test)`;
+    return "Stable (no change vs first test)";
+  })();
+
   return (
     <div className="container mx-auto px-4 py-8 pb-24 space-y-6">
       {/* Hero Section */}
       <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
         <CardContent className="p-8">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Trophy className="h-8 w-8 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">Your Performance Focus</h1>
-              <p className="text-lg text-muted-foreground mb-4">{getMotivationalMessage(overallScore)}</p>
-              <div className="space-y-3">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Trophy className="h-8 w-8 text-primary" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <h1 className="text-3xl font-bold">Performance Summary</h1>
+                <p className="text-sm text-muted-foreground max-w-xl">
+                  Snapshot of your latest strength test with the top areas to focus your next training block.
+                </p>
                 {latestTestDate && (
-                  <div className="inline-flex items-baseline gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
+                  <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
                     <span className="font-medium text-muted-foreground">Latest strength test:</span>
                     <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
                   </div>
                 )}
-
-                {topIssues.length > 0 && (
-                  <div className="mt-2 space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      Your current training block is focused on improving these key areas:
-                    </p>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {topIssues.map((issue, idx) => (
-                        <div
-                          key={`${issue.type}-${issue.muscleKey}-${idx}`}
-                          className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <Badge
-                              variant="outline"
-                              className={
-                                issue.type === "Strength"
-                                  ? "text-primary border-primary/40"
-                                  : issue.type === "Symmetry"
-                                    ? "text-amber-500 border-amber-500/40"
-                                    : "text-destructive border-destructive/40"
-                              }
-                            >
-                              {issue.type}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              Score: {Math.round(issue.relativeScore)}/100
-                            </span>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold">{issue.muscleLabel}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {Math.round(issue.severityPoints)} points to ideal
-                            </p>
-                            <p className="text-xs text-muted-foreground">{issue.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Your workouts prioritize these issues first so you can build strength and reduce injury risk where
-                      it matters most.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
+
+            {/* Overall & domain scores */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Overall performance
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold">{Math.round(overallScore)}</span>
+                  <span className="text-sm text-muted-foreground">/ 140% of target</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{getMotivationalMessage(overallScore)}</p>
+              </div>
+              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
+                <span className="text-lg font-semibold">{domainScoreLabel(strengthDomainScore)}</span>
+                <p className="text-xs text-muted-foreground">Higher is better (0–100). </p>
+              </div>
+              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Symmetry</span>
+                <span className="text-lg font-semibold">{domainScoreLabel(symmetryDomainScore)}</span>
+                <p className="text-xs text-muted-foreground">Accounts for left–right differences.</p>
+              </div>
+              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Balance ratios</span>
+                <span className="text-lg font-semibold">{domainScoreLabel(balanceDomainScore)}</span>
+                <p className="text-xs text-muted-foreground">Key muscle pairings for sprinting and change of direction.</p>
+              </div>
+            </div>
+
+            {/* Top priorities */}
+            {topIssues.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium">
+                  Top focus areas for this block
+                  <span className="font-normal text-muted-foreground"> – start here before adding more volume.</span>
+                </p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {topIssues.map((issue, idx) => (
+                    <div
+                      key={`${issue.type}-${issue.muscleKey}-${idx}`}
+                      className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            issue.type === "Strength"
+                              ? "text-primary border-primary/40"
+                              : issue.type === "Symmetry"
+                                ? "text-amber-500 border-amber-500/40"
+                                : "text-destructive border-destructive/40"
+                          }
+                        >
+                          {issue.type}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          Score: {Math.round(issue.relativeScore)}/100
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold">{issue.muscleLabel}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {Math.round(issue.severityPoints)} points below ideal.
+                        </p>
+                        <p className="text-xs text-muted-foreground">{issue.description}</p>
+                        <p className="text-xs text-muted-foreground italic">
+                          See details in{" "}
+                          {issue.type === "Strength"
+                            ? "Strength vs Target"
+                            : issue.type === "Symmetry"
+                              ? "Left vs Right Balance"
+                              : "Muscle Balance Ratios"}
+                          .
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Strength vs Target */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle>Strength vs Target</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Strength for each muscle on each side, shown as a percentage of your target. The line at 100% marks your
+            current goal; values above 100% mean you&apos;re exceeding it.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
+                <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+                <RechartsTooltip
+                  formatter={(value: any, key: any) => {
+                    const pct = value as number;
+                    const toTarget = 100 - pct;
+                    const side = key === "leftPct" ? "Left" : "Right";
+                    const direction = toTarget >= 0 ? "to target" : "above target";
+                    const delta = Math.abs(toTarget);
+                    return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
+                  }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                  }}
+                />
+                <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
+                <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
@@ -472,7 +589,9 @@ export function Stats() {
               <TrendingUp className="h-5 w-5 text-primary" />
               Left vs Right Balance
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Balanced muscles reduce injury risk and improve performance</p>
+            <p className="text-sm text-muted-foreground">
+              Balanced strength side-to-side reduces injury risk and improves change-of-direction and cutting mechanics.
+            </p>
           </CardHeader>
           <CardContent>
             <SymmetryChart data={symmetryData} />
@@ -480,57 +599,21 @@ export function Stats() {
         </Card>
       )}
 
-      {/* Strength vs Target & Balance */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Muscle Balance Ratios */}
+      {balanceData.length > 0 && (
         <Card className="border-2">
           <CardHeader>
-            <CardTitle>Strength vs Target</CardTitle>
+            <CardTitle>Muscle Balance Ratios</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Strength for each muscle on each side, shown as a percentage of your target.
+              Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
+              health.
             </p>
           </CardHeader>
           <CardContent>
-            <div className="w-full h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="name" className="text-xs" />
-                  <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
-                  <RechartsTooltip
-                    formatter={(value: any, key: any) => {
-                      const pct = value as number;
-                      const toTarget = Math.max(0, 100 - pct);
-                      const side = key === "leftPct" ? "Left" : "Right";
-                      return [`${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`, `${side} side`];
-                    }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "var(--radius)",
-                    }}
-                  />
-                  <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
-                  <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <BalanceChart data={balanceData} />
           </CardContent>
         </Card>
-
-        {balanceData.length > 0 && (
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle>Muscle Balance Ratios</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Quad–glute and quad–ham ratios by side help highlight strength imbalances that affect performance.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <BalanceChart data={balanceData} />
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      )}
 
       {/* Trend Overview */}
       {trendData.length > 1 && (
@@ -541,8 +624,13 @@ export function Stats() {
               Overall progress toward strength targets across your most recent tests.
             </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <TrendChart data={trendData} />
+            {trendDirectionLabel && (
+              <p className="text-xs text-muted-foreground">
+                {trendDirectionLabel}. Each point shows your overall strength vs target (0–140%) for that test.
+              </p>
+            )}
           </CardContent>
         </Card>
       )}

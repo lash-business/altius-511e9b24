@@ -1,12 +1,4 @@
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
 interface TrendPoint {
   date: string;
@@ -37,8 +29,13 @@ export function TrendChart({ data }: TrendChartProps) {
             domain={[0, 140]}
             tickFormatter={(value) => `${value}%`}
           />
+          <ReferenceLine
+            y={100}
+            stroke="hsl(var(--muted-foreground))"
+            strokeDasharray="4 4"
+          />
           <Tooltip
-            formatter={(value: any) => [`${value}%`, "Overall strength vs target"]}
+            formatter={(value: any) => [`${value}%`, "Overall strength vs target (0–140%)"]}
             labelFormatter={(label) => `Test date: ${label}`}
             contentStyle={{
               backgroundColor: "hsl(var(--card))",
