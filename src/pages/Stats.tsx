@@ -135,7 +135,7 @@ export function Stats() {
 
         if (strengthError || !strength) continue;
 
-        const strengthRows = strength as StrengthData[];
+        const strengthRows = strength as unknown as StrengthData[];
         const aggregateRows = strengthRows.filter((row) => row.left_right === "NA");
         if (aggregateRows.length === 0) continue;
 
