@@ -226,7 +226,6 @@ export function Stats() {
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
   const maxSymmetryGap =
-<<<<<<< HEAD
     symmetryData.length > 0
       ? Math.max(
           ...symmetryData.map((item) =>
@@ -243,12 +242,6 @@ export function Stats() {
           ),
         )
       : null;
-=======
-    symmetryData.length > 0 ? Math.max(...symmetryData.map((item) => Math.abs(item["Percent Diff"] ?? 0))) : null;
-
-  const worstBalanceDiff =
-    balanceData.length > 0 ? Math.max(...balanceData.map((item) => Math.abs(item.percent_diff ?? 0))) : null;
->>>>>>> 9519862f887e9bdf970f47f3869af2108d16432c
 
   const primaryStrengthBullet = (() => {
     if (aggregateStrength.length === 0) return null;
