@@ -1,3 +1,4 @@
+//
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,9 +150,7 @@ export function Stats() {
         if (aggregateRows.length === 0) continue;
 
         // norm_percent is stored 0–1 in the DB; convert to 0–100 for the trend
-        const avgNorm01 =
-          aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) /
-          aggregateRows.length;
+        const avgNorm01 = aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) / aggregateRows.length;
         const avgNormPercent = avgNorm01 * 100;
 
         points.push({
@@ -215,12 +214,7 @@ export function Stats() {
   const aggregateStrength = strengthData.filter((item) => item.left_right === "NA");
   const overallNormPercent =
     aggregateStrength.length > 0
-      ? (aggregateStrength.reduce(
-          (sum, item) => sum + (item.norm_percent || 0),
-          0,
-        ) /
-          aggregateStrength.length) *
-        100
+      ? (aggregateStrength.reduce((sum, item) => sum + (item.norm_percent || 0), 0) / aggregateStrength.length) * 100
       : 0;
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
@@ -233,12 +227,8 @@ export function Stats() {
   };
 
   const strengthChartData = Object.keys(muscleSortOrder).map((muscleKey) => {
-    const leftRow = strengthData.find(
-      (row) => row.muscle_group === muscleKey && row.left_right === "left",
-    );
-    const rightRow = strengthData.find(
-      (row) => row.muscle_group === muscleKey && row.left_right === "right",
-    );
+    const leftRow = strengthData.find((row) => row.muscle_group === muscleKey && row.left_right === "left");
+    const rightRow = strengthData.find((row) => row.muscle_group === muscleKey && row.left_right === "right");
 
     const leftPct = (leftRow?.norm_percent || 0) * 100;
     const rightPct = (rightRow?.norm_percent || 0) * 100;
@@ -252,21 +242,11 @@ export function Stats() {
 
   const maxSymmetryGap =
     symmetryData.length > 0
-      ? Math.max(
-          ...symmetryData.map((item) =>
-            Math.abs((item["Percent Diff"] ?? 0) * 100),
-          ),
-        )
+      ? Math.max(...symmetryData.map((item) => Math.abs((item["Percent Diff"] ?? 0) * 100)))
       : null;
 
   const worstBalanceDiff =
-    balanceData.length > 0
-      ? Math.max(
-          ...balanceData.map((item) =>
-            Math.abs((item.percent_diff ?? 0) * 100),
-          ),
-        )
-      : null;
+    balanceData.length > 0 ? Math.max(...balanceData.map((item) => Math.abs((item.percent_diff ?? 0) * 100))) : null;
 
   const primaryStrengthBullet = (() => {
     if (aggregateStrength.length === 0) return null;
@@ -304,9 +284,7 @@ export function Stats() {
     if (symmetryData.length === 0) return null;
 
     const sorted = [...symmetryData].sort(
-      (a, b) =>
-        Math.abs((b["Percent Diff"] ?? 0) * 100) -
-        Math.abs((a["Percent Diff"] ?? 0) * 100),
+      (a, b) => Math.abs((b["Percent Diff"] ?? 0) * 100) - Math.abs((a["Percent Diff"] ?? 0) * 100),
     );
 
     const top = sorted[0];
@@ -401,9 +379,7 @@ export function Stats() {
   const topIssues: Issue[] = (() => {
     if (issues.length === 0) return [];
 
-    const sorted = [...issues].sort(
-      (a, b) => b.severityPoints - a.severityPoints,
-    );
+    const sorted = [...issues].sort((a, b) => b.severityPoints - a.severityPoints);
 
     const usedMuscles = new Set<string>();
     const selected: Issue[] = [];
@@ -434,9 +410,7 @@ export function Stats() {
                 {latestTestDate && (
                   <div className="inline-flex items-baseline gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
                     <span className="font-medium text-muted-foreground">Latest strength test:</span>
-                    <span className="font-semibold">
-                      {new Date(latestTestDate).toLocaleDateString()}
-                    </span>
+                    <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
                   </div>
                 )}
 
@@ -458,8 +432,8 @@ export function Stats() {
                                 issue.type === "Strength"
                                   ? "text-primary border-primary/40"
                                   : issue.type === "Symmetry"
-                                  ? "text-amber-500 border-amber-500/40"
-                                  : "text-destructive border-destructive/40"
+                                    ? "text-amber-500 border-amber-500/40"
+                                    : "text-destructive border-destructive/40"
                               }
                             >
                               {issue.type}
@@ -479,8 +453,8 @@ export function Stats() {
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Your workouts prioritize these issues first so you can build strength and reduce injury risk where it
-                      matters most.
+                      Your workouts prioritize these issues first so you can build strength and reduce injury risk where
+                      it matters most.
                     </p>
                   </div>
                 )}
@@ -516,26 +490,16 @@ export function Stats() {
 
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={strengthChartData}
-                margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-              >
+              <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="name" className="text-xs" />
-                <YAxis
-                  className="text-xs"
-                  domain={[0, 140]}
-                  tickFormatter={(value) => `${value}%`}
-                />
+                <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
                 <RechartsTooltip
                   formatter={(value: any, key: any) => {
                     const pct = value as number;
                     const toTarget = Math.max(0, 100 - pct);
                     const side = key === "leftPct" ? "Left" : "Right";
-                    return [
-                      `${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`,
-                      `${side} side`,
-                    ];
+                    return [`${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`, `${side} side`];
                   }}
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
@@ -543,18 +507,8 @@ export function Stats() {
                     borderRadius: "var(--radius)",
                   }}
                 />
-                <Bar
-                  dataKey="leftPct"
-                  name="Left"
-                  radius={[4, 4, 0, 0]}
-                  fill="hsl(var(--primary))"
-                />
-                <Bar
-                  dataKey="rightPct"
-                  name="Right"
-                  radius={[4, 4, 0, 0]}
-                  fill="hsl(var(--accent))"
-                />
+                <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--primary))" />
+                <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--accent))" />
               </BarChart>
             </ResponsiveContainer>
           </div>
