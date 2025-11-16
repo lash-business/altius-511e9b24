@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Target } from "lucide-react";
@@ -225,6 +224,31 @@ export function Stats() {
       : 0;
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
+  const muscleSortOrder: Record<string, number> = {
+    quadriceps: 0,
+    hamstrings: 1,
+    gluteus: 2,
+    hip_abductors: 3,
+  };
+
+  const strengthChartData = Object.keys(muscleSortOrder).map((muscleKey) => {
+    const leftRow = strengthData.find(
+      (row) => row.muscle_group === muscleKey && row.left_right === "left",
+    );
+    const rightRow = strengthData.find(
+      (row) => row.muscle_group === muscleKey && row.left_right === "right",
+    );
+
+    const leftPct = (leftRow?.norm_percent || 0) * 100;
+    const rightPct = (rightRow?.norm_percent || 0) * 100;
+
+    return {
+      name: getMuscleDisplayName(muscleKey),
+      leftPct,
+      rightPct,
+    };
+  });
+
   const maxSymmetryGap =
     symmetryData.length > 0
       ? Math.max(
@@ -405,22 +429,18 @@ export function Stats() {
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">Your Performance Focus</h1>
               <p className="text-lg text-muted-foreground mb-4">{getMotivationalMessage(overallScore)}</p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <span className="text-sm font-medium">Overall progress toward strength targets</span>
-                    {latestTestDate && (
-                      <p className="text-xs text-muted-foreground">
-                        Latest test: {new Date(latestTestDate).toLocaleDateString()}
-                      </p>
-                    )}
+              <div className="space-y-3">
+                {latestTestDate && (
+                  <div className="inline-flex items-baseline gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
+                    <span className="font-medium text-muted-foreground">Latest strength test:</span>
+                    <span className="font-semibold">
+                      {new Date(latestTestDate).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="text-2xl font-bold text-primary">{overallScore}%</span>
-                </div>
-                <Progress value={overallScore} className="h-3" />
+                )}
 
                 {topIssues.length > 0 && (
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-2 space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Your current training block is focused on improving these key areas:
                     </p>
@@ -490,78 +510,53 @@ export function Stats() {
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Strength vs Target</h2>
           <p className="text-sm text-muted-foreground">
-            Each muscle group’s score shows how close you are to its target strength. Bars are sorted by how far you are
-            from 100%.
+            Strength for each muscle on each side, shown as a percentage of your target.
           </p>
 
-          {aggregateStrength.length > 0 && (
-            <div className="space-y-4">
-              <div className="w-full h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[...aggregateStrength]
-                      .slice()
-                      .sort((a, b) => a.norm_percent - b.norm_percent)
-                      .map((item) => {
-                        const norm01 = item.norm_percent || 0;
-                        return {
-                          name: getMuscleDisplayName(item.muscle_group),
-                          // convert 0–1 to 0–100 for display
-                          norm: Math.round(norm01 * 100),
-                        };
-                      })}
-                    layout="vertical"
-                    margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" domain={[0, 140]} tickFormatter={(value) => `${value}%`} className="text-xs" />
-                    <YAxis type="category" dataKey="name" className="text-xs" width={80} />
-                    <RechartsTooltip
-                      formatter={(value: any) => [`${value}% of target`, "Strength vs target"]}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "var(--radius)",
-                      }}
-                    />
-                    <Bar
-                      dataKey="norm"
-                      radius={[4, 4, 4, 4]}
-                      name="% of target"
-                      label={{ position: "right", formatter: (value: number) => `${value}%` }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                {[...aggregateStrength]
-                  .slice()
-                  .sort((a, b) => a.norm_percent - b.norm_percent)
-                  .map((item, idx) => {
-                    const norm01 = item.norm_percent || 0;
-                    const norm = Math.round(norm01 * 100);
-                    const deficit = Math.max(0, 100 - norm);
-                    return (
-                      <Card key={`${item.muscle_group}-${idx}`} className="border-2 bg-card">
-                        <CardContent className="p-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-sm">{getMuscleDisplayName(item.muscle_group)}</span>
-                            <span className="text-sm font-bold text-primary">{norm}%</span>
-                          </div>
-                          <Progress value={Math.max(0, Math.min(140, norm))} className="h-2" />
-                          <p className="text-xs text-muted-foreground">
-                            {norm >= 100
-                              ? "At or above target – maintain your current training."
-                              : `About ${deficit}% to reach your target strength.`}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={strengthChartData}
+                margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis
+                  className="text-xs"
+                  domain={[0, 140]}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <RechartsTooltip
+                  formatter={(value: any, key: any) => {
+                    const pct = value as number;
+                    const toTarget = Math.max(0, 100 - pct);
+                    const side = key === "leftPct" ? "Left" : "Right";
+                    return [
+                      `${pct.toFixed(0)}% (${toTarget.toFixed(0)}% to target)`,
+                      `${side} side`,
+                    ];
+                  }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                  }}
+                />
+                <Bar
+                  dataKey="leftPct"
+                  name="Left"
+                  radius={[4, 4, 0, 0]}
+                  fill="hsl(var(--primary))"
+                />
+                <Bar
+                  dataKey="rightPct"
+                  name="Right"
+                  radius={[4, 4, 0, 0]}
+                  fill="hsl(var(--accent))"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {balanceData.length > 0 && (
