@@ -43,6 +43,17 @@ interface TrendPoint {
   normPercent: number;
 }
 
+type IssueType = "Strength" | "Symmetry" | "Balance";
+
+interface Issue {
+  muscleKey: string;
+  muscleLabel: string;
+  type: IssueType;
+  severityPoints: number;
+  relativeScore: number;
+  description: string;
+}
+
 export function Stats() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -139,11 +150,15 @@ export function Stats() {
         const aggregateRows = strengthRows.filter((row) => row.left_right === "NA");
         if (aggregateRows.length === 0) continue;
 
-        const avgNorm = aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) / aggregateRows.length;
+        // norm_percent is stored 0–1 in the DB; convert to 0–100 for the trend
+        const avgNorm01 =
+          aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) /
+          aggregateRows.length;
+        const avgNormPercent = avgNorm01 * 100;
 
         points.push({
           date: test.test_date,
-          normPercent: Math.round(avgNorm),
+          normPercent: Math.round(avgNormPercent),
         });
       }
 
@@ -202,24 +217,23 @@ export function Stats() {
   const aggregateStrength = strengthData.filter((item) => item.left_right === "NA");
   const overallNormPercent =
     aggregateStrength.length > 0
-      ? aggregateStrength.reduce((sum, item) => sum + (item.norm_percent || 0), 0) / aggregateStrength.length
+      ? (aggregateStrength.reduce(
+          (sum, item) => sum + (item.norm_percent || 0),
+          0,
+        ) /
+          aggregateStrength.length) *
+        100
       : 0;
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
   // Percent Diff and percent_diff come from the DB on a 0–1 scale,
   // so convert to 0–100 for display.
   const maxSymmetryGap =
-<<<<<<< Updated upstream
-    symmetryData.length > 0 ? Math.max(...symmetryData.map((item) => Math.abs(item["Percent Diff"] ?? 0))) : null;
-
-  const worstBalanceDiff =
-    balanceData.length > 0 ? Math.max(...balanceData.map((item) => Math.abs(item.percent_diff ?? 0))) : null;
-=======
     symmetryData.length > 0
       ? Math.max(
           ...symmetryData.map((item) =>
-            Math.abs((item["Percent Diff"] ?? 0) * 100)
-          )
+            Math.abs((item["Percent Diff"] ?? 0) * 100),
+          ),
         )
       : null;
 
@@ -227,20 +241,19 @@ export function Stats() {
     balanceData.length > 0
       ? Math.max(
           ...balanceData.map((item) =>
-            Math.abs((item.percent_diff ?? 0) * 100)
-          )
+            Math.abs((item.percent_diff ?? 0) * 100),
+          ),
         )
       : null;
->>>>>>> Stashed changes
 
   const primaryStrengthBullet = (() => {
     if (aggregateStrength.length === 0) return null;
 
     const belowTarget = aggregateStrength
-      .filter((item) => item.norm_percent < 100)
+      .filter((item) => (item.norm_percent || 0) < 1)
       .map((item) => ({
         name: getMuscleDisplayName(item.muscle_group),
-        deficit: Math.round(100 - item.norm_percent),
+        deficit: Math.round((1 - (item.norm_percent || 0)) * 100),
       }))
       .sort((a, b) => b.deficit - a.deficit);
 
@@ -250,10 +263,10 @@ export function Stats() {
     }
 
     const aboveTarget = aggregateStrength
-      .filter((item) => item.norm_percent > 100)
+      .filter((item) => (item.norm_percent || 0) > 1)
       .map((item) => ({
         name: getMuscleDisplayName(item.muscle_group),
-        surplus: Math.round(item.norm_percent - 100),
+        surplus: Math.round(((item.norm_percent || 0) - 1) * 100),
       }))
       .sort((a, b) => b.surplus - a.surplus);
 
@@ -269,21 +282,118 @@ export function Stats() {
     if (symmetryData.length === 0) return null;
 
     const sorted = [...symmetryData].sort(
-      (a, b) => Math.abs(b["Percent Diff"] ?? 0) - Math.abs(a["Percent Diff"] ?? 0),
+      (a, b) =>
+        Math.abs((b["Percent Diff"] ?? 0) * 100) -
+        Math.abs((a["Percent Diff"] ?? 0) * 100),
     );
 
     const top = sorted[0];
-    const diff = top["Percent Diff"] ?? 0;
-    const absDiff = Math.abs(diff);
+    const diff01 = top["Percent Diff"] ?? 0;
+    const absDiff = Math.abs(diff01 * 100);
     if (absDiff === 0) return "Left and right sides are well balanced overall.";
 
     const muscleName = getMuscleDisplayName(top["Muscle Group"]);
-    const weakerSide = diff > 0 ? "left" : "right";
+    const weakerSide = diff01 > 0 ? "left" : "right";
     const strongerSide = weakerSide === "left" ? "right" : "left";
 
     return `${weakerSide === "left" ? "Left" : "Right"} ${muscleName} is ${absDiff.toFixed(
       1,
     )}% weaker than the ${strongerSide} side – focus unilateral work on the weaker side.`;
+  })();
+
+  const issues: Issue[] = (() => {
+    const result: Issue[] = [];
+
+    // Strength issues (aggregate rows only)
+    aggregateStrength.forEach((item) => {
+      const relScore = item.relative_score ?? 0;
+      const severityPoints = Math.max(0, 100 - relScore);
+      if (severityPoints <= 0) return;
+
+      const muscleLabel = getMuscleDisplayName(item.muscle_group);
+      result.push({
+        muscleKey: `strength-${item.muscle_group}`,
+        muscleLabel,
+        type: "Strength",
+        severityPoints,
+        relativeScore: relScore,
+        description: `${muscleLabel} strength is ${Math.round(severityPoints)} points below ideal.`,
+      });
+    });
+
+    // Symmetry issues
+    symmetryData.forEach((item) => {
+      const relScore = item["Relative Score"] ?? 0;
+      const severityPoints = Math.max(0, 100 - relScore);
+      if (severityPoints <= 0) return;
+
+      const diff01 = item["Percent Diff"] ?? 0;
+      const absDiffPercent = Math.abs(diff01 * 100);
+      const weakerSide = diff01 > 0 ? "Left" : diff01 < 0 ? "Right" : null;
+      const muscleLabel = getMuscleDisplayName(item["Muscle Group"]);
+
+      const sideText =
+        weakerSide != null
+          ? `${weakerSide} side is weaker by ${absDiffPercent.toFixed(1)}%`
+          : `Small left–right gap of ${absDiffPercent.toFixed(1)}%`;
+
+      result.push({
+        muscleKey: `symmetry-${item["Muscle Group"]}`,
+        muscleLabel,
+        type: "Symmetry",
+        severityPoints,
+        relativeScore: relScore,
+        description: `${muscleLabel} symmetry is below ideal – ${sideText}.`,
+      });
+    });
+
+    // Balance issues
+    balanceData.forEach((item) => {
+      const relScore = item.relative_score ?? 0;
+      const severityPoints = Math.max(0, 100 - relScore);
+      if (severityPoints <= 0) return;
+
+      const diff01 = item.percent_diff ?? 0;
+      const absDiffPercent = Math.abs(diff01 * 100);
+      const m1 = getMuscleDisplayName(item.muscle1);
+      const m2 = getMuscleDisplayName(item.muscle2);
+      const sideLabel = item.left_right === "left" ? "Left" : item.left_right === "right" ? "Right" : "";
+
+      const ratioLabel = `${m1} vs ${m2}${sideLabel ? ` (${sideLabel} side)` : ""}`;
+
+      // Use muscle_group as the uniqueness key to align with how training is defined,
+      // but show the friendly ratio label.
+      result.push({
+        muscleKey: `balance-${item.muscle_group}`,
+        muscleLabel: ratioLabel,
+        type: "Balance",
+        severityPoints,
+        relativeScore: relScore,
+        description: `${ratioLabel} ratio is ${absDiffPercent.toFixed(1)}% off ideal.`,
+      });
+    });
+
+    return result;
+  })();
+
+  const topIssues: Issue[] = (() => {
+    if (issues.length === 0) return [];
+
+    const sorted = [...issues].sort(
+      (a, b) => b.severityPoints - a.severityPoints,
+    );
+
+    const usedMuscles = new Set<string>();
+    const selected: Issue[] = [];
+
+    for (const issue of sorted) {
+      if (selected.length >= 2) break;
+      if (usedMuscles.has(issue.muscleKey)) continue;
+      usedMuscles.add(issue.muscleKey);
+      selected.push(issue);
+    }
+
+    return selected;
   })();
 
   return (
@@ -296,7 +406,7 @@ export function Stats() {
               <Trophy className="h-8 w-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">Your Performance</h1>
+              <h1 className="text-3xl font-bold mb-2">Your Performance Focus</h1>
               <p className="text-lg text-muted-foreground mb-4">{getMotivationalMessage(overallScore)}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -312,23 +422,50 @@ export function Stats() {
                 </div>
                 <Progress value={overallScore} className="h-3" />
 
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {maxSymmetryGap !== null && (
-                    <Badge variant="outline" className="text-xs">
-                      Max left–right gap: {maxSymmetryGap.toFixed(1)}%
-                    </Badge>
-                  )}
-                  {worstBalanceDiff !== null && (
-                    <Badge variant="outline" className="text-xs">
-                      Worst ratio off ideal: {worstBalanceDiff.toFixed(1)}%
-                    </Badge>
-                  )}
-                </div>
-
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground list-disc list-inside">
-                  {primaryStrengthBullet && <li>{primaryStrengthBullet}</li>}
-                  {primarySymmetryBullet && <li>{primarySymmetryBullet}</li>}
-                </ul>
+                {topIssues.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Your current training block is focused on improving these key areas:
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {topIssues.map((issue, idx) => (
+                        <div
+                          key={`${issue.type}-${issue.muscleKey}-${idx}`}
+                          className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge
+                              variant="outline"
+                              className={
+                                issue.type === "Strength"
+                                  ? "text-primary border-primary/40"
+                                  : issue.type === "Symmetry"
+                                  ? "text-amber-500 border-amber-500/40"
+                                  : "text-destructive border-destructive/40"
+                              }
+                            >
+                              {issue.type}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Score: {Math.round(issue.relativeScore)}/100
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold">{issue.muscleLabel}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {Math.round(issue.severityPoints)} points to ideal
+                            </p>
+                            <p className="text-xs text-muted-foreground">{issue.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Your workouts prioritize these issues first so you can build strength and reduce injury risk where it
+                      matters most.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -368,10 +505,14 @@ export function Stats() {
                     data={[...aggregateStrength]
                       .slice()
                       .sort((a, b) => a.norm_percent - b.norm_percent)
-                      .map((item) => ({
-                        name: getMuscleDisplayName(item.muscle_group),
-                        norm: Math.round(item.norm_percent),
-                      }))}
+                      .map((item) => {
+                        const norm01 = item.norm_percent || 0;
+                        return {
+                          name: getMuscleDisplayName(item.muscle_group),
+                          // convert 0–1 to 0–100 for display
+                          norm: Math.round(norm01 * 100),
+                        };
+                      })}
                     layout="vertical"
                     margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
                   >
@@ -401,7 +542,8 @@ export function Stats() {
                   .slice()
                   .sort((a, b) => a.norm_percent - b.norm_percent)
                   .map((item, idx) => {
-                    const norm = Math.round(item.norm_percent);
+                    const norm01 = item.norm_percent || 0;
+                    const norm = Math.round(norm01 * 100);
                     const deficit = Math.max(0, 100 - norm);
                     return (
                       <Card key={`${item.muscle_group}-${idx}`} className="border-2 bg-card">

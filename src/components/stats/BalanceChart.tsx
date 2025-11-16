@@ -76,16 +76,20 @@ export function BalanceChart({ data }: BalanceChartProps) {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span>{getMuscleDisplayName(item.muscle1)}</span>
-                          <span>{item.norm_percent1.toFixed(0)}%</span>
+                          <span>{(item.norm_percent1 * 100).toFixed(0)}%</span>
                         </div>
-                        <Progress value={Math.max(0, Math.min(140, item.norm_percent1))} />
+                        <Progress
+                          value={Math.max(0, Math.min(140, item.norm_percent1 * 100))}
+                        />
                       </div>
                       <div>
                         <div className="flex justify-between mb-1">
                           <span>{getMuscleDisplayName(item.muscle2)}</span>
-                          <span>{item.norm_percent2.toFixed(0)}%</span>
+                          <span>{(item.norm_percent2 * 100).toFixed(0)}%</span>
                         </div>
-                        <Progress value={Math.max(0, Math.min(140, item.norm_percent2))} />
+                        <Progress
+                          value={Math.max(0, Math.min(140, item.norm_percent2 * 100))}
+                        />
                       </div>
                     </div>
                   </div>
