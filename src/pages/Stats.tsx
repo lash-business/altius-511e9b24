@@ -1,3 +1,4 @@
+// update
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,15 +10,7 @@ import { Trophy, TrendingUp, Target } from "lucide-react";
 import { SymmetryChart } from "@/components/stats/SymmetryChart";
 import { BalanceChart } from "@/components/stats/BalanceChart";
 import { TrendChart } from "@/components/stats/TrendChart";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 
 interface StrengthData {
   muscle_group: string;
@@ -146,9 +139,7 @@ export function Stats() {
         const aggregateRows = strengthRows.filter((row) => row.left_right === "NA");
         if (aggregateRows.length === 0) continue;
 
-        const avgNorm =
-          aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) /
-          aggregateRows.length;
+        const avgNorm = aggregateRows.reduce((sum, row) => sum + (row.norm_percent || 0), 0) / aggregateRows.length;
 
         points.push({
           date: test.test_date,
@@ -211,28 +202,15 @@ export function Stats() {
   const aggregateStrength = strengthData.filter((item) => item.left_right === "NA");
   const overallNormPercent =
     aggregateStrength.length > 0
-      ? aggregateStrength.reduce((sum, item) => sum + (item.norm_percent || 0), 0) /
-        aggregateStrength.length
+      ? aggregateStrength.reduce((sum, item) => sum + (item.norm_percent || 0), 0) / aggregateStrength.length
       : 0;
-  const overallScore = Math.round(
-    Math.min(140, Math.max(0, overallNormPercent))
-  );
+  const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
   const maxSymmetryGap =
-    symmetryData.length > 0
-      ? Math.max(
-          ...symmetryData.map((item) =>
-            Math.abs(item["Percent Diff"] ?? 0)
-          )
-        )
-      : null;
+    symmetryData.length > 0 ? Math.max(...symmetryData.map((item) => Math.abs(item["Percent Diff"] ?? 0))) : null;
 
   const worstBalanceDiff =
-    balanceData.length > 0
-      ? Math.max(
-          ...balanceData.map((item) => Math.abs(item.percent_diff ?? 0))
-        )
-      : null;
+    balanceData.length > 0 ? Math.max(...balanceData.map((item) => Math.abs(item.percent_diff ?? 0))) : null;
 
   const primaryStrengthBullet = (() => {
     if (aggregateStrength.length === 0) return null;
@@ -270,8 +248,7 @@ export function Stats() {
     if (symmetryData.length === 0) return null;
 
     const sorted = [...symmetryData].sort(
-      (a, b) =>
-        Math.abs(b["Percent Diff"] ?? 0) - Math.abs(a["Percent Diff"] ?? 0)
+      (a, b) => Math.abs(b["Percent Diff"] ?? 0) - Math.abs(a["Percent Diff"] ?? 0),
     );
 
     const top = sorted[0];
@@ -284,7 +261,7 @@ export function Stats() {
     const strongerSide = weakerSide === "left" ? "right" : "left";
 
     return `${weakerSide === "left" ? "Left" : "Right"} ${muscleName} is ${absDiff.toFixed(
-      1
+      1,
     )}% weaker than the ${strongerSide} side – focus unilateral work on the weaker side.`;
   })();
 
@@ -299,25 +276,18 @@ export function Stats() {
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">Your Performance</h1>
-              <p className="text-lg text-muted-foreground mb-4">
-                {getMotivationalMessage(overallScore)}
-              </p>
+              <p className="text-lg text-muted-foreground mb-4">{getMotivationalMessage(overallScore)}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <span className="text-sm font-medium">
-                      Overall progress toward strength targets
-                    </span>
+                    <span className="text-sm font-medium">Overall progress toward strength targets</span>
                     {latestTestDate && (
                       <p className="text-xs text-muted-foreground">
-                        Latest test:{" "}
-                        {new Date(latestTestDate).toLocaleDateString()}
+                        Latest test: {new Date(latestTestDate).toLocaleDateString()}
                       </p>
                     )}
                   </div>
-                  <span className="text-2xl font-bold text-primary">
-                    {overallScore}%
-                  </span>
+                  <span className="text-2xl font-bold text-primary">{overallScore}%</span>
                 </div>
                 <Progress value={overallScore} className="h-3" />
 
@@ -352,9 +322,7 @@ export function Stats() {
               <TrendingUp className="h-5 w-5 text-primary" />
               Left vs Right Balance
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Balanced muscles reduce injury risk and improve performance
-            </p>
+            <p className="text-sm text-muted-foreground">Balanced muscles reduce injury risk and improve performance</p>
           </CardHeader>
           <CardContent>
             <SymmetryChart data={symmetryData} />
@@ -367,7 +335,8 @@ export function Stats() {
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Strength vs Target</h2>
           <p className="text-sm text-muted-foreground">
-            Each muscle group’s score shows how close you are to its target strength. Bars are sorted by how far you are from 100%.
+            Each muscle group’s score shows how close you are to its target strength. Bars are sorted by how far you are
+            from 100%.
           </p>
 
           {aggregateStrength.length > 0 && (
@@ -386,12 +355,7 @@ export function Stats() {
                     margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis
-                      type="number"
-                      domain={[0, 140]}
-                      tickFormatter={(value) => `${value}%`}
-                      className="text-xs"
-                    />
+                    <XAxis type="number" domain={[0, 140]} tickFormatter={(value) => `${value}%`} className="text-xs" />
                     <YAxis type="category" dataKey="name" className="text-xs" width={80} />
                     <RechartsTooltip
                       formatter={(value: any) => [`${value}% of target`, "Strength vs target"]}
@@ -419,18 +383,11 @@ export function Stats() {
                     const norm = Math.round(item.norm_percent);
                     const deficit = Math.max(0, 100 - norm);
                     return (
-                      <Card
-                        key={`${item.muscle_group}-${idx}`}
-                        className="border-2 bg-card"
-                      >
+                      <Card key={`${item.muscle_group}-${idx}`} className="border-2 bg-card">
                         <CardContent className="p-4 space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-sm">
-                              {getMuscleDisplayName(item.muscle_group)}
-                            </span>
-                            <span className="text-sm font-bold text-primary">
-                              {norm}%
-                            </span>
+                            <span className="font-semibold text-sm">{getMuscleDisplayName(item.muscle_group)}</span>
+                            <span className="text-sm font-bold text-primary">{norm}%</span>
                           </div>
                           <Progress value={Math.max(0, Math.min(140, norm))} className="h-2" />
                           <p className="text-xs text-muted-foreground">
