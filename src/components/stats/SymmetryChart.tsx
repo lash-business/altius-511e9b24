@@ -90,6 +90,13 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
               backgroundColor: "hsl(var(--card))",
               border: "1px solid hsl(var(--border))",
               borderRadius: "var(--radius)",
+              color: "hsl(var(--foreground))",
+            }}
+            labelStyle={{
+              color: "hsl(var(--muted-foreground))",
+            }}
+            itemStyle={{
+              color: "hsl(var(--foreground))",
             }}
           />
           <Bar
