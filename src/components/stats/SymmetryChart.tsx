@@ -31,23 +31,29 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
     return names[name.toLowerCase()] || name;
   };
 
-  const getSymmetryColor = (percentDiff: number) => {
-    const absDiff = Math.abs(percentDiff);
+  // Percent Diff is stored 0–1 in the DB; convert to 0–100
+  const getSymmetryColor = (percentDiff01: number) => {
+    const absDiff = Math.abs(percentDiff01 * 100);
     if (absDiff <= 10) return "hsl(var(--primary))"; // Well balanced
     if (absDiff <= 20) return "hsl(var(--accent))"; // Moderate asymmetry
     return "hsl(var(--destructive))"; // High asymmetry
   };
 
-  const chartData = data.map((item) => ({
-    name: getMuscleDisplayName(item["Muscle Group"]),
-    diff: item["Percent Diff"],
-    left: item["Left Raw"],
-    right: item["Right Raw"],
-  }));
+  const chartData = data.map((item) => {
+    const diff01 = item["Percent Diff"] ?? 0;
+    return {
+      name: getMuscleDisplayName(item["Muscle Group"]),
+      // store as true percent for the chart
+      diffPercent: diff01 * 100,
+      left: item["Left Raw"],
+      right: item["Right Raw"],
+      rawDiff01: diff01,
+    };
+  });
 
   const maxAbsDiff =
     chartData.length > 0
-      ? Math.max(...chartData.map((item) => Math.abs(item.diff ?? 0)))
+      ? Math.max(...chartData.map((item) => Math.abs(item.diffPercent ?? 0)))
       : 0;
   const domainPadding = 5;
   const domainMax = Math.ceil(maxAbsDiff + domainPadding);
@@ -74,12 +80,12 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
           />
           <Tooltip
             formatter={(value: any, _name, props: any) => {
-              const diff = value as number;
+              const diffPercent = value as number;
               const { payload } = props;
               const left = payload.left as number;
               const right = payload.right as number;
               return [
-                `${diff.toFixed(1)}% (positive = right stronger)`,
+                `${diffPercent.toFixed(1)}% (positive = right stronger)`,
                 "Percent difference",
                 <div className="mt-1 text-xs text-muted-foreground" key="details">
                   <div>Left: {left.toFixed(1)}</div>
@@ -95,22 +101,11 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
             }}
           />
           <Bar
-            dataKey="diff"
+            dataKey="diffPercent"
             name="Percent difference"
             radius={[4, 4, 4, 4]}
             isAnimationActive={false}
-          >
-            {chartData.map((entry, index) => (
-              <rect
-                key={`bar-bg-${index}`}
-                x={0}
-                y={0}
-                width={0}
-                height={0}
-                fill={getSymmetryColor(entry.diff)}
-              />
-            ))}
-          </Bar>
+          />
         </BarChart>
       </ResponsiveContainer>
 
@@ -120,17 +115,18 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
           .slice()
           .sort(
             (a, b) =>
-              Math.abs(b["Percent Diff"] ?? 0) - Math.abs(a["Percent Diff"] ?? 0)
+              Math.abs((b["Percent Diff"] ?? 0) * 100) -
+              Math.abs((a["Percent Diff"] ?? 0) * 100)
           )
           .map((item, idx) => {
-            const absDiff = Math.abs(item["Percent Diff"]);
-            const color = getSymmetryColor(item["Percent Diff"]);
-            const isBalanced = absDiff <= 10;
-            const diff = item["Percent Diff"];
-            const weakerSide = diff > 0 ? "Left" : diff < 0 ? "Right" : null;
+            const diff01 = item["Percent Diff"] ?? 0;
+            const absDiffPercent = Math.abs(diff01 * 100);
+            const color = getSymmetryColor(diff01);
+            const isBalanced = absDiffPercent <= 10;
+            const weakerSide = diff01 > 0 ? "Left" : diff01 < 0 ? "Right" : null;
             const muscleName = getMuscleDisplayName(item["Muscle Group"]);
 
-          return (
+            return (
             <div
               key={idx}
               className="p-4 rounded-lg border-2 bg-card"
@@ -144,7 +140,7 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
                   className="text-sm font-bold"
                   style={{ color }}
                 >
-                  {absDiff.toFixed(1)}% diff
+                  {absDiffPercent.toFixed(1)}% diff
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">

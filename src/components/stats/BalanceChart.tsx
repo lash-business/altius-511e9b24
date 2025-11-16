@@ -26,8 +26,9 @@ export function BalanceChart({ data }: BalanceChartProps) {
     return names[name] || name;
   };
 
-  const getDiffColor = (percentDiff: number) => {
-    const absDiff = Math.abs(percentDiff);
+  // percent_diff is stored 0–1 in the DB; convert to 0–100 for thresholding.
+  const getDiffColor = (percentDiff01: number) => {
+    const absDiff = Math.abs(percentDiff01 * 100);
     if (absDiff <= 10) return "text-primary"; // Well balanced
     if (absDiff <= 20) return "text-amber-500"; // Moderate imbalance
     return "text-destructive"; // High imbalance
@@ -53,8 +54,9 @@ export function BalanceChart({ data }: BalanceChartProps) {
             <h3 className="font-semibold">{group.label}</h3>
             <div className="space-y-3">
               {group.items.map((item, idx) => {
-                const absDiff = Math.abs(item.percent_diff);
-                const colorClass = getDiffColor(item.percent_diff);
+                const diff01 = item.percent_diff ?? 0;
+                const absDiffPercent = Math.abs(diff01 * 100);
+                const colorClass = getDiffColor(diff01);
 
                 return (
                   <div
@@ -67,7 +69,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
                         {getMuscleDisplayName(item.muscle2)}
                       </span>
                       <span className={`text-xs font-bold ${colorClass}`}>
-                        {absDiff.toFixed(1)}% off ideal
+                        {absDiffPercent.toFixed(1)}% off ideal
                       </span>
                     </div>
                     <div className="space-y-2 text-xs text-muted-foreground">
