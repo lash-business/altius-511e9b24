@@ -403,20 +403,24 @@ export function Stats() {
     return selected;
   })();
 
-  const strengthDomainScore =
-    aggregateStrength.length > 0
-      ? aggregateStrength.reduce((sum, item) => sum + (item.relative_score ?? 0), 0) / aggregateStrength.length
-      : null;
+  const averageScore = (values: (number | null | undefined)[]) => {
+    const filtered = values.filter((v): v is number => typeof v === "number" && !Number.isNaN(v));
+    if (filtered.length === 0) return null;
+    const avg = filtered.reduce((sum, v) => sum + v, 0) / filtered.length;
+    return Math.max(0, Math.min(100, avg));
+  };
 
-  const symmetryDomainScore =
-    symmetryData.length > 0
-      ? symmetryData.reduce((sum, item) => sum + (item["Relative Score"] ?? 0), 0) / symmetryData.length
-      : null;
+  // Domain-level scores based purely on relative scores (0–100)
+  const strengthDomainScore = averageScore(strengthData.map((item) => item.relative_score));
+  const symmetryDomainScore = averageScore(symmetryData.map((item) => item["Relative Score"]));
+  const balanceDomainScore = averageScore(balanceData.map((item) => item.relative_score));
 
-  const balanceDomainScore =
-    balanceData.length > 0
-      ? balanceData.reduce((sum, item) => sum + (item.relative_score ?? 0), 0) / balanceData.length
-      : null;
+  // Overall performance = average of all relative scores across all three views
+  const overallPerformanceScore = averageScore([
+    ...strengthData.map((item) => item.relative_score),
+    ...symmetryData.map((item) => item["Relative Score"]),
+    ...balanceData.map((item) => item.relative_score),
+  ]);
 
   const domainScoreLabel = (score: number | null) =>
     score == null ? "—" : `${Math.round(Math.max(0, Math.min(100, score)))} / 100`;
@@ -464,10 +468,14 @@ export function Stats() {
                   Overall performance
                 </span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">{Math.round(overallScore)}</span>
-                  <span className="text-sm text-muted-foreground">/ 140% of target</span>
+                  <span className="text-3xl font-bold">
+                    {overallPerformanceScore == null ? "—" : Math.round(overallPerformanceScore)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">/ 100</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{getMotivationalMessage(overallScore)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {getMotivationalMessage(overallPerformanceScore ?? 0)}
+                </p>
               </div>
               <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
