@@ -174,10 +174,10 @@ export function Stats() {
 
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
-      quadriceps: "Quads",
-      hamstrings: "Hamstrings",
-      gluteus: "Glutes",
-      hip_abductors: "Hip Abductors",
+      quad: "Quads",
+      ham: "Hamstrings",
+      glute: "Glutes",
+      abductor: "Hip Abductors",
     };
     return names[name] || name;
   };
@@ -217,11 +217,12 @@ export function Stats() {
       : 0;
   const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
+  // Use DB muscle_group keys for ordering; display names are mapped via getMuscleDisplayName.
   const muscleSortOrder: Record<string, number> = {
-    quadriceps: 0,
-    hamstrings: 1,
-    gluteus: 2,
-    hip_abductors: 3,
+    quad: 0,
+    ham: 1,
+    glute: 2,
+    abductor: 3,
   };
 
   const strengthChartData = Object.keys(muscleSortOrder).map((muscleKey) => {
