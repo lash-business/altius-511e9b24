@@ -302,7 +302,7 @@ export function Stats() {
     if (absDiff === 0) return "Left and right sides are well balanced overall.";
 
     const muscleName = getMuscleDisplayName(top["Muscle Group"]);
-    const weakerSide = diff01 > 0 ? "left" : "right";
+    const weakerSide = diff01 > 0 ? "right" : "left";
     const strongerSide = weakerSide === "left" ? "right" : "left";
 
     return `${weakerSide === "left" ? "Left" : "Right"} ${muscleName} is ${absDiff.toFixed(
@@ -338,7 +338,7 @@ export function Stats() {
 
       const diff01 = item["Percent Diff"] ?? 0;
       const absDiffPercent = Math.abs(diff01 * 100);
-      const weakerSide = diff01 > 0 ? "Left" : diff01 < 0 ? "Right" : null;
+      const weakerSide = diff01 > 0 ? "Right" : diff01 < 0 ? "Left" : null;
       const muscleLabel = getMuscleDisplayName(item["Muscle Group"]);
 
       const sideText =

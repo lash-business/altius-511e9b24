@@ -77,7 +77,7 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
               const left = payload.left as number;
               const right = payload.right as number;
               return [
-                `${diffPercent.toFixed(1)}% (positive = right stronger)`,
+                `${diffPercent.toFixed(1)}% (positive = left stronger)`,
                 "Percent difference",
                 <div className="mt-1 text-xs text-muted-foreground" key="details">
                   <div>Left: {left.toFixed(1)}</div>
@@ -126,7 +126,7 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
             const absDiffPercent = Math.abs(diff01 * 100);
             const color = getSymmetryColor(diff01);
             const isBalanced = absDiffPercent <= 10;
-            const weakerSide = diff01 > 0 ? "Left" : diff01 < 0 ? "Right" : null;
+            const weakerSide = diff01 > 0 ? "Right" : diff01 < 0 ? "Left" : null;
             const muscleName = getMuscleDisplayName(item["Muscle Group"]);
 
             return (
