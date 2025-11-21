@@ -1,4 +1,3 @@
-//
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -473,9 +472,7 @@ export function Stats() {
                   </span>
                   <span className="text-sm text-muted-foreground">/ 100</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {getMotivationalMessage(overallPerformanceScore ?? 0)}
-                </p>
+                <p className="text-xs text-muted-foreground">{getMotivationalMessage(overallPerformanceScore ?? 0)}</p>
               </div>
               <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
@@ -488,9 +485,13 @@ export function Stats() {
                 <p className="text-xs text-muted-foreground">Accounts for left–right differences.</p>
               </div>
               <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Balance ratios</span>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Balance ratios
+                </span>
                 <span className="text-lg font-semibold">{domainScoreLabel(balanceDomainScore)}</span>
-                <p className="text-xs text-muted-foreground">Key muscle pairings for sprinting and change of direction.</p>
+                <p className="text-xs text-muted-foreground">
+                  Key muscle pairings for sprinting and change of direction.
+                </p>
               </div>
             </div>
 
