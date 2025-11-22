@@ -509,7 +509,18 @@ export function Workout() {
           const setsCompleted = (completion[exercise.userExerciseId] ?? []).filter(Boolean).length;
           const isComplete = overallStatus.perExerciseComplete[index];
           return <Card key={exercise.userExerciseId} className="border border-muted shadow-none">
-                <CardContent className="flex items-center justify-between gap-4 py-4">
+                <CardContent
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleJumpToExercise(index)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleJumpToExercise(index);
+                    }
+                  }}
+                  className="flex cursor-pointer items-center justify-between gap-4 py-4"
+                >
                   <div className="flex items-center gap-3">
                     <div className={cn("flex h-8 w-8 items-center justify-center rounded-full border", isComplete ? "border-foreground bg-foreground text-background" : "border-amber-500 bg-amber-50 text-amber-600")}>
                       {isComplete ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
@@ -607,10 +618,7 @@ export function Workout() {
   }
   return <>
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col px-4 pb-28 pt-4">
-        
-
-        {renderVideo()}
-
+        {!isReviewStep && renderVideo()}
         <main className="mt-4 flex-1 pb-4">
           {isReviewStep ? renderReviewPage() : <>
               {renderExerciseHeader()}
