@@ -80,6 +80,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
                         </div>
                         <Progress
                           value={Math.max(0, Math.min(140, item.norm_percent1 * 100))}
+                          className="bg-transparent"
                         />
                       </div>
                       <div>
@@ -89,6 +90,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
                         </div>
                         <Progress
                           value={Math.max(0, Math.min(140, item.norm_percent2 * 100))}
+                          className="bg-transparent"
                         />
                       </div>
                     </div>
