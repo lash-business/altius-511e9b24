@@ -14,11 +14,7 @@ export function Home() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("tests")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1);
+      const { data, error } = await supabase.from("tests").select("id").eq("user_id", user.id).limit(1);
 
       if (error) {
         console.error("Error checking tests:", error);
