@@ -404,7 +404,7 @@ export function Workout() {
         title: "Workout completed",
         description: "Nice work! Your results have been saved.",
       });
-      navigate("/training");
+      navigate("/home");
     } catch (error) {
       console.error("Error submitting workout:", error);
       toast({
@@ -744,7 +744,7 @@ export function Workout() {
           <p className="text-sm text-muted-foreground">
             We couldn&apos;t load your workout. Please return to the Training page and try again.
           </p>
-          <Button variant="outline" className="mt-2" onClick={() => navigate("/training")}>
+          <Button variant="outline" className="mt-2" onClick={() => navigate("/home")}>
             Back to Training
           </Button>
         </div>
