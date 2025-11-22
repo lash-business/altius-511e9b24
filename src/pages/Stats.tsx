@@ -632,15 +632,7 @@ export function Stats() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
-            <StrengthRadarChart data={strengthRadarData} />
-            {(weakestAxisBullet || primaryStrengthBullet) && (
-              <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
-                {weakestAxisBullet && <p>{weakestAxisBullet}</p>}
-                {primaryStrengthBullet && <p>{primaryStrengthBullet}</p>}
-              </div>
-            )}
-          </div>
+          <StrengthRadarChart data={strengthRadarData} />
         </CardContent>
       </Card>
 
