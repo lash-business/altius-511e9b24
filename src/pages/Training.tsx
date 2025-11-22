@@ -4,7 +4,6 @@ import { Zap, Activity } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Layout } from "@/components/common/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -330,7 +329,7 @@ export function Training() {
   );
 
   return (
-    <Layout>
+    <>
       {viewState.status === "loading" && renderLoading()}
       {viewState.status === "blank" && renderBlankState(viewState.reason)}
       {viewState.status === "ready" && (
@@ -426,7 +425,7 @@ export function Training() {
           </section>
         </div>
       )}
-    </Layout>
+    </>
   );
 }
 
