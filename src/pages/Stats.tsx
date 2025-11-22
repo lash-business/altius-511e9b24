@@ -8,6 +8,7 @@ import { Trophy, TrendingUp, Target } from "lucide-react";
 import { SymmetryChart } from "@/components/stats/SymmetryChart";
 import { BalanceChart } from "@/components/stats/BalanceChart";
 import { TrendChart } from "@/components/stats/TrendChart";
+import { StrengthRadarChart } from "@/components/stats/StrengthRadarChart";
 import {
   BarChart,
   Bar,
@@ -23,7 +24,12 @@ interface StrengthData {
   muscle_group: string;
   left_right: string;
   relative_score: number;
-  norm_percent: number;
+  // Stored as 0–1 in the DB; convert to 0–100 for display where needed
+  norm_percent: number | null;
+  // Extra fields from v_strength used for richer visuals/tooltips
+  measurement_name?: string | null;
+  norm_target?: number | null;
+  raw_value?: number | null;
 }
 
 interface SymmetryData {
@@ -309,6 +315,73 @@ export function Stats() {
     )}% weaker than the ${strongerSide} side – focus unilateral work on the weaker side.`;
   })();
 
+  const weakestAxisBullet = (() => {
+    if (!strengthData || strengthData.length === 0) return null;
+    const sideRows = strengthData.filter((row) => row.left_right === "left" || row.left_right === "right");
+    if (sideRows.length === 0) return null;
+
+    const sorted = [...sideRows].sort(
+      (a, b) => (a.norm_percent ?? 0) - (b.norm_percent ?? 0),
+    );
+
+    const bottom = sorted[0];
+    const label = `${bottom.left_right === "left" ? "Left" : "Right"} ${getMuscleDisplayName(bottom.muscle_group)}`;
+    const pct = Math.round((bottom.norm_percent ?? 0) * 100);
+    return `${label} is currently your lowest at ${pct}.`;
+  })();
+
+  // Radar chart data – one spoke per v_strength row (per measurement/side)
+  const strengthRadarData = (() => {
+    if (!strengthData || strengthData.length === 0) return [];
+
+    const muscleSortOrder: Record<string, number> = {
+      quad: 0,
+      ham: 1,
+      glute: 2,
+      abductor: 3,
+    };
+
+    const sideSortOrder: Record<string, number> = {
+      left: 0,
+      right: 1,
+      both: 2,
+    };
+
+    const sorted = [...strengthData].sort((a, b) => {
+      const muscleA = muscleSortOrder[a.muscle_group] ?? 99;
+      const muscleB = muscleSortOrder[b.muscle_group] ?? 99;
+      if (muscleA !== muscleB) return muscleA - muscleB;
+
+      const sideA = sideSortOrder[a.left_right] ?? 99;
+      const sideB = sideSortOrder[b.left_right] ?? 99;
+      return sideA - sideB;
+    });
+
+    return sorted.map((row) => {
+      const norm01 = row.norm_percent ?? 0;
+      const normPercentRaw = norm01 * 100;
+      const normPercentCapped = Math.min(100, normPercentRaw);
+
+      const sideLabel =
+        row.left_right === "left"
+          ? "Left"
+          : row.left_right === "right"
+            ? "Right"
+            : row.left_right === "both"
+              ? "Both"
+              : row.left_right;
+
+      return {
+        axisLabel: `${sideLabel} ${getMuscleDisplayName(row.muscle_group)}`,
+        value: normPercentCapped,
+        normPercentRaw,
+        rawValue: row.raw_value ?? null,
+        normTarget: row.norm_target ?? null,
+        measurementName: row.measurement_name ?? null,
+      };
+    });
+  })();
+
   const issues: Issue[] = (() => {
     const result: Issue[] = [];
 
@@ -447,9 +520,10 @@ export function Stats() {
                 <Trophy className="h-8 w-8 text-primary" />
               </div>
               <div className="flex-1 space-y-2">
-                <h1 className="text-3xl font-bold">Performance Summary</h1>
+                <h1 className="text-3xl font-bold">Performance Dashboard</h1>
                 <p className="text-sm text-muted-foreground max-w-xl">
-                  Snapshot of your latest strength test with the top areas to focus your next training block.
+                  Snapshot of your latest strength test with a strength radar at the center and clear priorities for
+                  your next training block.
                 </p>
                 {latestTestDate && (
                   <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
@@ -550,13 +624,41 @@ export function Stats() {
         </CardContent>
       </Card>
 
-      {/* Strength vs Target */}
+      {/* Strength Profile (Radar) */}
+      <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
+        <CardHeader>
+          <CardTitle>Strength Profile (vs Norms)</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Each spoke shows strength for a specific muscle and side compared to your target. The outer ring is 100;
+            values above 100 are capped visually but still shown in the tooltip.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
+            <StrengthRadarChart data={strengthRadarData} />
+            <div className="space-y-3 text-sm">
+              <p className="font-semibold">How to read this chart</p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <li>The closer a spoke is to the outer ring, the closer that muscle is to its current strength target.</li>
+                <li>Spokes that sit well inside the ring highlight priority areas for your next training block.</li>
+                <li>Hover or tap a point to see your raw value and exact norm percentage for that measurement.</li>
+              </ul>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                {weakestAxisBullet && <p>{weakestAxisBullet}</p>}
+                {primaryStrengthBullet && <p>{primaryStrengthBullet}</p>}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Strength vs Target (detail view) */}
       <Card className="border-2">
         <CardHeader>
-          <CardTitle>Strength vs Target</CardTitle>
+          <CardTitle>Strength vs Target (by Muscle Group)</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Strength for each muscle on each side, shown as a percentage of your target. The line at 100% marks your
-            current goal; values above 100% mean you&apos;re exceeding it.
+            Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
+            side is from the 100 line.
           </p>
         </CardHeader>
         <CardContent>
@@ -597,39 +699,41 @@ export function Stats() {
         </CardContent>
       </Card>
 
-      {/* Symmetry Section */}
-      {symmetryData.length > 0 && (
-        <Card className="border-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Left vs Right Balance
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Balanced strength side-to-side reduces injury risk and improves change-of-direction and cutting mechanics.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <SymmetryChart data={symmetryData} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Symmetry & Balance */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {symmetryData.length > 0 && (
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Left vs Right Balance
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Side-to-side balance supports efficient cutting mechanics and reduces injury risk, especially around the
+                knee and hip.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <SymmetryChart data={symmetryData} />
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Muscle Balance Ratios */}
-      {balanceData.length > 0 && (
-        <Card className="border-2">
-          <CardHeader>
-            <CardTitle>Muscle Balance Ratios</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
-              health.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <BalanceChart data={balanceData} />
-          </CardContent>
-        </Card>
-      )}
+        {balanceData.length > 0 && (
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle>Muscle Balance Ratios</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
+                health.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <BalanceChart data={balanceData} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Trend Overview */}
       {trendData.length > 1 && (
