@@ -622,66 +622,69 @@ export function Stats() {
         </CardContent>
       </Card>
 
-      {/* Strength Profile (Radar) */}
-      <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardHeader>
-          <CardTitle>Strength Profile (vs Norms)</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Each spoke shows strength for a specific muscle and side compared to your target. The outer ring is 100;
-            values above 100 are capped visually but still shown in the tooltip.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <StrengthRadarChart data={strengthRadarData} />
-        </CardContent>
-      </Card>
+      {/* Strength Profile & Detail View */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Strength Profile (Radar) */}
+        <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
+          <CardHeader>
+            <CardTitle>Strength Profile (vs Norms)</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Each spoke shows strength for a specific muscle and side compared to your target. The outer ring is 100;
+              values above 100 are capped visually but still shown in the tooltip.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <StrengthRadarChart data={strengthRadarData} />
+          </CardContent>
+        </Card>
 
-      {/* Strength vs Target (detail view) */}
-      <Card className="border-2">
-        <CardHeader>
-          <CardTitle>Strength vs Target (by Muscle Group)</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
-            side is from the 100 line.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
-                <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                <RechartsTooltip
-                  formatter={(value: any, name: any) => {
-                    const pct = value as number;
-                    const toTarget = 100 - pct;
-                    const side = typeof name === "string" ? name : "";
-                    const direction = toTarget >= 0 ? "to target" : "above target";
-                    const delta = Math.abs(toTarget);
-                    return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
-                  }}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                    color: "hsl(var(--foreground))",
-                  }}
-                  labelStyle={{
-                    color: "hsl(var(--muted-foreground))",
-                  }}
-                  itemStyle={{
-                    color: "hsl(var(--foreground))",
-                  }}
-                />
-                <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
-                <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Strength vs Target (detail view) */}
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Strength vs Target (by Muscle Group)</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
+              side is from the 100 line.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
+                  <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+                  <RechartsTooltip
+                    formatter={(value: any, name: any) => {
+                      const pct = value as number;
+                      const toTarget = 100 - pct;
+                      const side = typeof name === "string" ? name : "";
+                      const direction = toTarget >= 0 ? "to target" : "above target";
+                      const delta = Math.abs(toTarget);
+                      return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
+                    }}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                      color: "hsl(var(--foreground))",
+                    }}
+                    labelStyle={{
+                      color: "hsl(var(--muted-foreground))",
+                    }}
+                    itemStyle={{
+                      color: "hsl(var(--foreground))",
+                    }}
+                  />
+                  <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
+                  <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Symmetry & Balance */}
       <div className="grid gap-6 md:grid-cols-2">
