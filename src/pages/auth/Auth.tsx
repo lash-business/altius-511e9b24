@@ -107,7 +107,7 @@ export function Auth() {
           <div className="flex justify-center mb-4">
             <TrendingUp className="h-12 w-12" />
           </div>
-          <h1 className="text-4xl font-bold">Altius</h1>
+          <h1 className="text-4xl font-bold">Flow8</h1>
           <p className="mt-2 text-muted-foreground">
             Transforming strength data into personalized training
           </p>
