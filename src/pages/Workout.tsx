@@ -1,15 +1,7 @@
+//
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AlertCircle,
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  Pause,
-  Play,
-} from "lucide-react";
+import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, Info, Pause, Play } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,12 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,9 +112,7 @@ export function Workout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showIncompleteConfirm, setShowIncompleteConfirm] = useState(false);
 
-  const isReviewStep =
-    viewState.status === "ready" &&
-    currentStepIndex === viewState.data.exercises.length;
+  const isReviewStep = viewState.status === "ready" && currentStepIndex === viewState.data.exercises.length;
 
   // Load workout and exercises
   useEffect(() => {
@@ -175,9 +160,7 @@ export function Workout() {
           completed_at: string | null;
         }[];
 
-        const nextWorkout = typedWorkouts.find(
-          (w) => w.completed_at == null,
-        );
+        const nextWorkout = typedWorkouts.find((w) => w.completed_at == null);
 
         if (!nextWorkout) {
           navigate("/home");
@@ -185,12 +168,11 @@ export function Workout() {
         }
 
         // 3. Exercises in the next workout
-        const { data: userExercises, error: userExercisesError } =
-          await supabase
-            .from("user_exercises")
-            .select("id, exercise_id, order")
-            .eq("workout_id", nextWorkout.id)
-            .order("order", { ascending: true });
+        const { data: userExercises, error: userExercisesError } = await supabase
+          .from("user_exercises")
+          .select("id, exercise_id, order")
+          .eq("workout_id", nextWorkout.id)
+          .order("order", { ascending: true });
 
         if (userExercisesError) throw userExercisesError;
 
@@ -206,11 +188,7 @@ export function Workout() {
         }
 
         const exerciseIds = Array.from(
-          new Set(
-            typedUserExercises
-              .map((ue) => ue.exercise_id)
-              .filter((id): id is string => !!id),
-          ),
+          new Set(typedUserExercises.map((ue) => ue.exercise_id).filter((id): id is string => !!id)),
         );
 
         let exercisesById = new Map<
@@ -231,9 +209,7 @@ export function Workout() {
         if (exerciseIds.length > 0) {
           const { data: exercises, error: exercisesError } = await supabase
             .from("exercises")
-            .select(
-              "id, name, sets, reps_seconds, duration, video_link, equipment, setup, queues",
-            )
+            .select("id, name, sets, reps_seconds, duration, video_link, equipment, setup, queues")
             .in("id", exerciseIds);
 
           if (exercisesError) throw exercisesError;
@@ -257,9 +233,7 @@ export function Workout() {
         }
 
         const exercises: WorkoutExercise[] = typedUserExercises.map((ue) => {
-          const base = ue.exercise_id
-            ? exercisesById.get(ue.exercise_id)
-            : undefined;
+          const base = ue.exercise_id ? exercisesById.get(ue.exercise_id) : undefined;
 
           const sets = base?.sets ?? DEFAULT_SETS;
 
@@ -302,10 +276,7 @@ export function Workout() {
         const normalizedCompletion: CompletionState = {};
         for (const ex of exercises) {
           const existing = initialCompletion[ex.userExerciseId] ?? [];
-          const arr = Array.from(
-            { length: ex.sets },
-            (_v, idx) => existing[idx] ?? false,
-          );
+          const arr = Array.from({ length: ex.sets }, (_v, idx) => existing[idx] ?? false);
           normalizedCompletion[ex.userExerciseId] = arr;
         }
 
@@ -352,9 +323,7 @@ export function Workout() {
   }, [completion, user, viewState]);
 
   const activeExercise: WorkoutExercise | null =
-    viewState.status === "ready" && !isReviewStep
-      ? viewState.data.exercises[currentStepIndex]
-      : null;
+    viewState.status === "ready" && !isReviewStep ? viewState.data.exercises[currentStepIndex] : null;
 
   const overallStatus = useMemo(() => {
     if (viewState.status !== "ready") {
@@ -427,20 +396,10 @@ export function Workout() {
       const updates: Promise<unknown>[] = [];
 
       if (completedUserExerciseIds.length > 0) {
-        updates.push(
-          supabase
-            .from("user_exercises")
-            .update({ completed_at: now })
-            .in("id", completedUserExerciseIds),
-        );
+        updates.push(supabase.from("user_exercises").update({ completed_at: now }).in("id", completedUserExerciseIds));
       }
 
-      updates.push(
-        supabase
-          .from("workouts")
-          .update({ completed_at: now })
-          .eq("id", viewState.data.workoutId),
-      );
+      updates.push(supabase.from("workouts").update({ completed_at: now }).eq("id", viewState.data.workoutId));
 
       const results = await Promise.all(updates);
 
@@ -509,12 +468,8 @@ export function Workout() {
     if (!embedUrl) {
       return (
         <div className="flex h-48 w-full flex-col items-center justify-center gap-2 rounded-2xl bg-muted">
-          <span className="text-sm font-medium text-muted-foreground">
-            Vimeo Video
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Video unavailable for this exercise.
-          </span>
+          <span className="text-sm font-medium text-muted-foreground">Vimeo Video</span>
+          <span className="text-xs text-muted-foreground">Video unavailable for this exercise.</span>
         </div>
       );
     }
@@ -548,18 +503,10 @@ export function Workout() {
               className={cn(
                 "flex-1 rounded-full px-2 py-1 text-xs font-medium text-background",
                 "transition-colors",
-                isComplete
-                  ? "bg-foreground"
-                  : isActive
-                    ? "bg-foreground/80"
-                    : "bg-muted text-muted-foreground",
+                isComplete ? "bg-foreground" : isActive ? "bg-foreground/80" : "bg-muted text-muted-foreground",
               )}
             >
-              {isComplete ? (
-                <Check className="mx-auto h-4 w-4" />
-              ) : (
-                <span className="block h-4 w-full" />
-              )}
+              {isComplete ? <Check className="mx-auto h-4 w-4" /> : <span className="block h-4 w-full" />}
             </button>
           );
         })}
@@ -570,13 +517,7 @@ export function Workout() {
   const renderDescriptionPreview = () => {
     if (!activeExercise) return null;
 
-    const parts = [
-      activeExercise.equipment,
-      activeExercise.setup,
-      activeExercise.queues,
-    ]
-      .filter(Boolean)
-      .join(" ");
+    const parts = [activeExercise.equipment, activeExercise.setup, activeExercise.queues].filter(Boolean).join(" ");
 
     if (!parts) return null;
 
@@ -621,9 +562,7 @@ export function Workout() {
             <div className="flex justify-end">
               <Switch
                 checked={!!exerciseCompletion[index]}
-                onCheckedChange={() =>
-                  handleToggleSet(activeExercise.userExerciseId, index)
-                }
+                onCheckedChange={() => handleToggleSet(activeExercise.userExerciseId, index)}
               />
             </div>
           </div>
@@ -652,9 +591,7 @@ export function Workout() {
       <Sheet open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
         <SheetContent side="bottom" className="max-h-[55vh] overflow-y-auto">
           <SheetHeader className="mb-2 flex flex-row items-center justify-between">
-            <SheetTitle className="text-lg font-semibold">
-              Description
-            </SheetTitle>
+            <SheetTitle className="text-lg font-semibold">Description</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 text-sm leading-relaxed text-foreground">
             {lines.map((line, idx) => (
@@ -675,14 +612,9 @@ export function Workout() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="flex w-full items-center justify-between gap-3 pt-2 text-left"
-            >
+            <button type="button" className="flex w-full items-center justify-between gap-3 pt-2 text-left">
               <div className="flex-1">
-                <h1 className="line-clamp-2 text-2xl font-bold leading-tight tracking-tight">
-                  {activeExercise.name}
-                </h1>
+                <h1 className="line-clamp-2 text-2xl font-bold leading-tight tracking-tight">{activeExercise.name}</h1>
               </div>
               <ChevronDown className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -692,15 +624,10 @@ export function Workout() {
               <DropdownMenuItem
                 key={exercise.userExerciseId}
                 onClick={() => handleJumpToExercise(index)}
-                className={cn(
-                  "flex items-center justify-between gap-3",
-                  index === currentStepIndex && "bg-accent",
-                )}
+                className={cn("flex items-center justify-between gap-3", index === currentStepIndex && "bg-accent")}
               >
                 <span className="line-clamp-1 text-sm">{exercise.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {exercise.sets} sets
-                </span>
+                <span className="text-xs text-muted-foreground">{exercise.sets} sets</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -719,16 +646,11 @@ export function Workout() {
         <h2 className="text-2xl font-bold tracking-tight">Nice Work!</h2>
         <div className="space-y-3">
           {viewState.data.exercises.map((exercise, index) => {
-            const setsCompleted = (completion[exercise.userExerciseId] ?? []).filter(
-              Boolean,
-            ).length;
+            const setsCompleted = (completion[exercise.userExerciseId] ?? []).filter(Boolean).length;
             const isComplete = overallStatus.perExerciseComplete[index];
 
             return (
-              <Card
-                key={exercise.userExerciseId}
-                className="border border-muted shadow-none"
-              >
+              <Card key={exercise.userExerciseId} className="border border-muted shadow-none">
                 <CardContent className="flex items-center justify-between gap-4 py-4">
                   <div className="flex items-center gap-3">
                     <div
@@ -739,16 +661,10 @@ export function Workout() {
                           : "border-amber-500 bg-amber-50 text-amber-600",
                       )}
                     >
-                      {isComplete ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4" />
-                      )}
+                      {isComplete ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium leading-snug">
-                        {exercise.name}
-                      </p>
+                      <p className="text-sm font-medium leading-snug">{exercise.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {setsCompleted} of {exercise.sets} sets complete
                       </p>
@@ -767,17 +683,12 @@ export function Workout() {
             onClick={handleSubmitWorkout}
             disabled={isSubmitting}
           >
-            {overallStatus.allComplete ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <AlertCircle className="h-4 w-4" />
-            )}
+            {overallStatus.allComplete ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
             <span>Complete &amp; Exit</span>
           </Button>
           {!overallStatus.allComplete && (
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              Some exercises are missing completed sets. You can still finish
-              this workout.
+              Some exercises are missing completed sets. You can still finish this workout.
             </p>
           )}
         </div>
@@ -798,23 +709,14 @@ export function Workout() {
             <h2 className="text-base font-semibold">Finish workout?</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Some exercises still have sets marked as incomplete. Are you sure
-            you want to complete this workout and save your progress?
+            Some exercises still have sets marked as incomplete. Are you sure you want to complete this workout and save
+            your progress?
           </p>
           <div className="mt-4 flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setShowIncompleteConfirm(false)}
-            >
+            <Button variant="outline" className="flex-1" onClick={() => setShowIncompleteConfirm(false)}>
               Keep Editing
             </Button>
-            <Button
-              variant="default"
-              className="flex-1"
-              onClick={handleSubmitWorkout}
-              disabled={isSubmitting}
-            >
+            <Button variant="default" className="flex-1" onClick={handleSubmitWorkout} disabled={isSubmitting}>
               Yes, Complete
             </Button>
           </div>
@@ -830,9 +732,7 @@ export function Workout() {
     const isFirstExercise = currentStepIndex === 0;
     const isLastExercise = currentStepIndex === totalExercises - 1;
 
-    const forwardIsPrimary =
-      !isReviewStep &&
-      overallStatus.perExerciseComplete[currentStepIndex] === true;
+    const forwardIsPrimary = !isReviewStep && overallStatus.perExerciseComplete[currentStepIndex] === true;
 
     return (
       <div className="fixed inset-x-0 bottom-0 border-t bg-background/95 pb-6 pt-4">
@@ -864,11 +764,7 @@ export function Workout() {
             disabled={isReviewStep}
             onClick={handleNext}
           >
-            {isLastExercise ? (
-              <Play className="h-5 w-5" />
-            ) : (
-              <ChevronRight className="h-5 w-5" />
-            )}
+            {isLastExercise ? <Play className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
           </Button>
         </div>
       </div>
@@ -885,14 +781,9 @@ export function Workout() {
         <div className="max-w-md space-y-4 text-center">
           <h1 className="text-2xl font-bold tracking-tight">Workout</h1>
           <p className="text-sm text-muted-foreground">
-            We couldn&apos;t load your workout. Please return to the Training
-            page and try again.
+            We couldn&apos;t load your workout. Please return to the Training page and try again.
           </p>
-          <Button
-            variant="outline"
-            className="mt-2"
-            onClick={() => navigate("/training")}
-          >
+          <Button variant="outline" className="mt-2" onClick={() => navigate("/training")}>
             Back to Training
           </Button>
         </div>
@@ -909,16 +800,9 @@ export function Workout() {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col px-4 pb-28 pt-4">
         <header className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-muted px-2 py-1 text-xs font-semibold">
-              Altius
-            </span>
+            <span className="rounded-full bg-muted px-2 py-1 text-xs font-semibold">Altius</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => navigate("/training")}
-          >
+          <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate("/training")}>
             <Pause className="h-5 w-5" />
             <span className="sr-only">Exit workout</span>
           </Button>
@@ -944,5 +828,3 @@ export function Workout() {
     </>
   );
 }
-
-
