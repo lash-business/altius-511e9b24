@@ -22,7 +22,7 @@ export function HamstringsStep({ data, updateData, onNext, onBack, stepLabel }: 
       <CardContent className="pt-8 pb-6 px-8 space-y-6">
         <div className="flex items-center justify-center gap-2 text-foreground font-semibold text-sm">
           <span>⚡</span>
-          <span>Altius</span>
+          <span>Flow8</span>
         </div>
 
         <div className="space-y-2 text-center">

@@ -1,4 +1,4 @@
-# Altius - Sports Science PWA
+# Flow8 - Sports Science PWA
 
 A production-grade Progressive Web App for sports science, built with modern web technologies.
 
@@ -183,7 +183,7 @@ This project uses:
 
 ## 📄 License
 
-Copyright © 2025 Altius. All rights reserved.
+Copyright © 2025 Flow8. All rights reserved.
 
 ---
 

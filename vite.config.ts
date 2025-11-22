@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
   //     registerType: "autoUpdate",
   //     includeAssets: ["icon-192.png", "icon-512.png"],
   //     manifest: {
-  //       name: "Altius - Sports Science PWA",
-  //       short_name: "Altius",
+  //       name: "Flow8 - Sports Science PWA",
+  //       short_name: "Flow8",
   //       description: "Progressive Web App for sports science",
   //       theme_color: "#2563c4",
   //       background_color: "#f0f4f8",

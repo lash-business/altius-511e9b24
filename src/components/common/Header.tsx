@@ -56,10 +56,10 @@ export function Header({ variant = "default" }: HeaderProps) {
         <Link 
           to="/" 
           className="flex items-center justify-center gap-2 font-semibold text-lg transition-smooth hover:text-primary focus-visible:text-primary"
-          aria-label="Altius home"
+          aria-label="Flow8 home"
         >
           <Activity className="h-6 w-6 text-primary" aria-hidden="true" />
-          <span>Altius</span>
+          <span>Flow8</span>
         </Link>
 
         {/* Right side: variant-specific */}

@@ -12,7 +12,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-2 text-foreground font-semibold">
             <span className="text-xl">⚡</span>
-            <span>Altius</span>
+            <span>Flow8</span>
           </div>
         </div>
 

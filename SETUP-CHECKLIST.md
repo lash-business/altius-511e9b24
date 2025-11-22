@@ -1,4 +1,4 @@
-# Altius PWA - Step 1 Setup Checklist ✅
+# Flow8 PWA - Step 1 Setup Checklist ✅
 
 ## ✅ Core Requirements
 
@@ -31,7 +31,7 @@
 - [x] **404** - NotFound page
 
 ### Page Content
-- [x] Home displays "Altius" title
+- [x] Home displays "Flow8" title
 - [x] Home displays "Sports science PWA — scaffolding step 1"
 - [x] Home displays muted note about future services
 - [x] Health page renders JSON with status, version, timestamp
@@ -69,8 +69,8 @@
 - [x] **manifest.json** - Complete PWA manifest
 
 ### Manifest Details
-- [x] name: "Altius - Sports Science PWA"
-- [x] short_name: "Altius"
+- [x] name: "Flow8 - Sports Science PWA"
+- [x] short_name: "Flow8"
 - [x] start_url: "/"
 - [x] display: "standalone"
 - [x] background_color: "#f0f4f8"
@@ -321,7 +321,7 @@ You now have a **production-grade PWA foundation** ready for:
 ### 🎯 Suggested Prompt for Step 2:
 
 ```
-Connect Altius to Lovable Cloud / Supabase with Row Level Security.
+Connect Flow8 to Lovable Cloud / Supabase with Row Level Security.
 
 Requirements:
 - Initialize Supabase client with environment variables

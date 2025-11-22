@@ -6,7 +6,7 @@ import App from "../App";
 describe("App", () => {
   it("renders the home page", () => {
     render(<App />);
-    expect(screen.getByText("Altius")).toBeInTheDocument();
+    expect(screen.getByText("Flow8")).toBeInTheDocument();
     expect(screen.getByText(/Sports science PWA/i)).toBeInTheDocument();
   });
 
