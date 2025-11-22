@@ -9,6 +9,7 @@ import { Onboarding } from "@/pages/Onboarding";
 import { Stats } from "@/pages/Stats";
 import { Profile } from "@/pages/Profile";
 import { Test } from "@/pages/Test";
+import { Workout } from "@/pages/Workout";
 import NotFound from "@/pages/NotFound";
 
 export function AppRoutes() {
@@ -19,6 +20,7 @@ export function AppRoutes() {
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/stats" element={<Stats />} />
       <Route path="/test" element={<Test />} />
+      <Route path="/workout" element={<Workout />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/health" element={<Health />} />
       <Route path="/auth" element={<Auth />} />
