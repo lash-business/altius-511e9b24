@@ -24,6 +24,12 @@ interface StrengthRadarChartProps {
 }
 
 export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
+  const chartData = data?.map((point) => ({
+    ...point,
+    // Reference ring at 100 to make the outer edge clear
+    target: 100,
+  }));
+
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">
@@ -35,8 +41,8 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
   return (
     <div className="w-full h-[320px] sm:h-[360px] md:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} margin={{ top: 16, bottom: 16, left: 16, right: 16 }}>
-          <PolarGrid stroke="hsl(var(--muted))" radialLines />
+        <RadarChart data={chartData} margin={{ top: 16, bottom: 16, left: 16, right: 16 }}>
+          <PolarGrid stroke="hsl(var(--muted))" strokeDasharray="3 3" radialLines />
           <PolarAngleAxis
             dataKey="axisLabel"
             tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
@@ -84,6 +90,17 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
               );
             }}
           />
+          {/* Outer reference ring at 100 */}
+          <Radar
+            name="Target (100)"
+            dataKey="target"
+            stroke="hsl(var(--accent))"
+            fill="none"
+            strokeDasharray="4 4"
+            strokeWidth={1.5}
+            isAnimationActive={false}
+          />
+
           <Radar
             name="Strength vs Norm"
             dataKey="value"

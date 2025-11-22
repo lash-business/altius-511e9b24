@@ -636,18 +636,12 @@ export function Stats() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
             <StrengthRadarChart data={strengthRadarData} />
-            <div className="space-y-3 text-sm">
-              <p className="font-semibold">How to read this chart</p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                <li>The closer a spoke is to the outer ring, the closer that muscle is to its current strength target.</li>
-                <li>Spokes that sit well inside the ring highlight priority areas for your next training block.</li>
-                <li>Hover or tap a point to see your raw value and exact norm percentage for that measurement.</li>
-              </ul>
-              <div className="space-y-1 text-xs text-muted-foreground">
+            {(weakestAxisBullet || primaryStrengthBullet) && (
+              <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 {weakestAxisBullet && <p>{weakestAxisBullet}</p>}
                 {primaryStrengthBullet && <p>{primaryStrengthBullet}</p>}
               </div>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>
