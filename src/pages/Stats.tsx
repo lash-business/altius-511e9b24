@@ -320,9 +320,7 @@ export function Stats() {
     const sideRows = strengthData.filter((row) => row.left_right === "left" || row.left_right === "right");
     if (sideRows.length === 0) return null;
 
-    const sorted = [...sideRows].sort(
-      (a, b) => (a.norm_percent ?? 0) - (b.norm_percent ?? 0),
-    );
+    const sorted = [...sideRows].sort((a, b) => (a.norm_percent ?? 0) - (b.norm_percent ?? 0));
 
     const bottom = sorted[0];
     const label = `${bottom.left_right === "left" ? "Left" : "Right"} ${getMuscleDisplayName(bottom.muscle_group)}`;
@@ -636,8 +634,21 @@ export function Stats() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
             <StrengthRadarChart data={strengthRadarData} />
+<<<<<<< HEAD
             {(weakestAxisBullet || primaryStrengthBullet) && (
               <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+=======
+            <div className="space-y-3 text-sm">
+              <p className="font-semibold">How to read this chart</p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <li>
+                  The closer a spoke is to the outer ring, the closer that muscle is to its current strength target.
+                </li>
+                <li>Spokes that sit well inside the ring highlight priority areas for your next training block.</li>
+                <li>Hover or tap a point to see your raw value and exact norm percentage for that measurement.</li>
+              </ul>
+              <div className="space-y-1 text-xs text-muted-foreground">
+>>>>>>> b10ba2dd2397a639ca86259d9e478687ec9006c6
                 {weakestAxisBullet && <p>{weakestAxisBullet}</p>}
                 {primaryStrengthBullet && <p>{primaryStrengthBullet}</p>}
               </div>
