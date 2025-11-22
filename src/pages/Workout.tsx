@@ -1,4 +1,3 @@
-//
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, Info, Pause, Play } from "lucide-react";
@@ -385,7 +384,7 @@ export function Workout() {
             completed_at: now,
           })
           .in("id", completedUserExerciseIds);
-        
+
         if (userExercisesError) throw userExercisesError;
       }
 
@@ -396,7 +395,7 @@ export function Workout() {
           completed_at: now,
         })
         .eq("id", viewState.data.workoutId);
-      
+
       if (workoutError) throw workoutError;
       const storageKey = getWorkoutStorageKey(user.id, viewState.data.workoutId);
       localStorage.removeItem(storageKey);
