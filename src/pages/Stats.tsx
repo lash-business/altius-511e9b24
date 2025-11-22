@@ -329,31 +329,30 @@ export function Stats() {
     return `${label} is currently your lowest at ${pct}.`;
   })();
 
-  // Radar chart data – one spoke per v_strength row (per measurement/side)
+  // Radar chart data – one spoke per v_strength row (per measurement/side),
+  // ordered to always follow: R Quad, R Ham, R Glute, R Abductor, L Abductor, L Glute, L Ham, L Quad.
   const strengthRadarData = (() => {
     if (!strengthData || strengthData.length === 0) return [];
 
-    const muscleSortOrder: Record<string, number> = {
-      quad: 0,
-      ham: 1,
-      glute: 2,
-      abductor: 3,
-    };
-
-    const sideSortOrder: Record<string, number> = {
-      left: 0,
-      right: 1,
-      both: 2,
+    const axisOrder: Record<string, number> = {
+      "right-quad": 0,
+      "right-ham": 1,
+      "right-glute": 2,
+      "right-abductor": 3,
+      "left-abductor": 4,
+      "left-glute": 5,
+      "left-ham": 6,
+      "left-quad": 7,
     };
 
     const sorted = [...strengthData].sort((a, b) => {
-      const muscleA = muscleSortOrder[a.muscle_group] ?? 99;
-      const muscleB = muscleSortOrder[b.muscle_group] ?? 99;
-      if (muscleA !== muscleB) return muscleA - muscleB;
-
-      const sideA = sideSortOrder[a.left_right] ?? 99;
-      const sideB = sideSortOrder[b.left_right] ?? 99;
-      return sideA - sideB;
+      const keyA = `${a.left_right}-${a.muscle_group}`;
+      const keyB = `${b.left_right}-${b.muscle_group}`;
+      const orderA = axisOrder[keyA] ?? 99;
+      const orderB = axisOrder[keyB] ?? 99;
+      if (orderA !== orderB) return orderA - orderB;
+      // Stable secondary sort to keep multiple measurements for the same axis grouped predictably
+      return (a.measurement_name ?? "").localeCompare(b.measurement_name ?? "");
     });
 
     return sorted.map((row) => {
@@ -635,21 +634,8 @@ export function Stats() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
             <StrengthRadarChart data={strengthRadarData} />
-<<<<<<< HEAD
             {(weakestAxisBullet || primaryStrengthBullet) && (
               <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
-=======
-            <div className="space-y-3 text-sm">
-              <p className="font-semibold">How to read this chart</p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                <li>
-                  The closer a spoke is to the outer ring, the closer that muscle is to its current strength target.
-                </li>
-                <li>Spokes that sit well inside the ring highlight priority areas for your next training block.</li>
-                <li>Hover or tap a point to see your raw value and exact norm percentage for that measurement.</li>
-              </ul>
-              <div className="space-y-1 text-xs text-muted-foreground">
->>>>>>> b10ba2dd2397a639ca86259d9e478687ec9006c6
                 {weakestAxisBullet && <p>{weakestAxisBullet}</p>}
                 {primaryStrengthBullet && <p>{primaryStrengthBullet}</p>}
               </div>

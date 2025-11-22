@@ -41,7 +41,13 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
   return (
     <div className="w-full h-[320px] sm:h-[360px] md:h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={chartData} margin={{ top: 16, bottom: 16, left: 16, right: 16 }}>
+        <RadarChart
+          data={chartData}
+          margin={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          // Rotate 22.5° counter-clockwise from the default orientation
+          startAngle={90 - 22.5}
+          endAngle={-270 - 22.5}
+        >
           <PolarGrid stroke="hsl(var(--muted))" strokeDasharray="3 3" radialLines />
           <PolarAngleAxis
             dataKey="axisLabel"
