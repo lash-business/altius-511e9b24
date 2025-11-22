@@ -376,35 +376,28 @@ export function Workout() {
       const completedUserExerciseIds = viewState.data.exercises
         .filter((ex) => (completion[ex.userExerciseId] ?? []).every(Boolean))
         .map((ex) => ex.userExerciseId);
-      const updates: Promise<unknown>[] = [];
+
+      // Update completed user exercises
       if (completedUserExerciseIds.length > 0) {
-        updates.push(
-          supabase
-            .from("user_exercises")
-            .update({
-              completed_at: now,
-            })
-            .in("id", completedUserExerciseIds),
-        );
-      }
-      updates.push(
-        supabase
-          .from("workouts")
+        const { error: userExercisesError } = await supabase
+          .from("user_exercises")
           .update({
             completed_at: now,
           })
-          .eq("id", viewState.data.workoutId),
-      );
-      const results = await Promise.all(updates);
-      const userExercisesResult = results[0] as {
-        error?: Error | null;
-      };
-      const workoutResult = results[results.length - 1] as {
-        error?: Error | null;
-      };
-      if (userExercisesResult?.error || workoutResult?.error) {
-        throw userExercisesResult.error || workoutResult.error;
+          .in("id", completedUserExerciseIds);
+        
+        if (userExercisesError) throw userExercisesError;
       }
+
+      // Mark workout as completed
+      const { error: workoutError } = await supabase
+        .from("workouts")
+        .update({
+          completed_at: now,
+        })
+        .eq("id", viewState.data.workoutId);
+      
+      if (workoutError) throw workoutError;
       const storageKey = getWorkoutStorageKey(user.id, viewState.data.workoutId);
       localStorage.removeItem(storageKey);
       toast({
