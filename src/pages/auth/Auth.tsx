@@ -66,24 +66,39 @@ export function Auth() {
     }
   };
 
-  const onSignup = async (data: SignupForm) => {
+  const onSignup = async (signupData: SignupForm) => {
     setIsLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
 
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
+      const { data, error } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            first_name: data.firstName,
-            last_name: data.lastName,
+            first_name: signupData.firstName,
+            last_name: signupData.lastName,
           },
         },
       });
 
       if (error) throw error;
+
+      const user = data?.user;
+
+      if (!user) {
+        throw new Error("Unable to complete sign up. Please try again.");
+      }
+
+      const { error: profileError } = await supabase.from("users").insert({
+        id: user.id,
+        email: user.email ?? signupData.email,
+        first_name: signupData.firstName,
+        last_name: signupData.lastName,
+      });
+
+      if (profileError) throw profileError;
 
       toast({
         title: "Account created",
