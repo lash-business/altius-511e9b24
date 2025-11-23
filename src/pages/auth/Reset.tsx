@@ -57,7 +57,7 @@ export function Reset() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <Activity className="h-12 w-12" />
+            <Activity className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-4xl font-bold">Flow8</h1>
           <p className="mt-2 text-muted-foreground">
