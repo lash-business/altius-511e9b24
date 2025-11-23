@@ -214,11 +214,14 @@ export function Onboarding() {
       });
 
       navigate("/stats");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving onboarding data:", error);
       toast({
         title: "Error",
-        description: "Failed to save your data. Please try again.",
+        description:
+          typeof error?.message === "string"
+            ? error.message
+            : "Failed to save your data. Please try again.",
         variant: "destructive",
       });
     } finally {
