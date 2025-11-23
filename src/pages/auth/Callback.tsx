@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { TrendingUp } from "lucide-react";
+import { Activity } from "lucide-react";
 
 const passwordSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -77,7 +77,7 @@ export function Callback() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <TrendingUp className="h-12 w-12" />
+            <Activity className="h-12 w-12" />
           </div>
           <h1 className="text-4xl font-bold">Flow8</h1>
           <p className="mt-2 text-muted-foreground">
