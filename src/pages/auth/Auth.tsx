@@ -123,9 +123,7 @@ export function Auth() {
             <Activity className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-4xl font-bold">Flow8</h1>
-          <p className="mt-2 text-muted-foreground">
-            Transforming strength data into personalized training
-          </p>
+          <p className="mt-2 text-muted-foreground">Transforming strength data into personalized training</p>
         </div>
 
         <div className="rounded-lg border bg-card p-8 shadow-lg">
@@ -147,9 +145,7 @@ export function Auth() {
                     aria-invalid={!!loginForm.formState.errors.email}
                   />
                   {loginForm.formState.errors.email && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {loginForm.formState.errors.email.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
                   )}
                 </div>
 
@@ -163,9 +159,7 @@ export function Auth() {
                     aria-invalid={!!loginForm.formState.errors.password}
                   />
                   {loginForm.formState.errors.password && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {loginForm.formState.errors.password.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
                   )}
                 </div>
 
@@ -198,9 +192,7 @@ export function Auth() {
                     aria-invalid={!!signupForm.formState.errors.firstName}
                   />
                   {signupForm.formState.errors.firstName && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signupForm.formState.errors.firstName.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{signupForm.formState.errors.firstName.message}</p>
                   )}
                 </div>
 
@@ -214,9 +206,7 @@ export function Auth() {
                     aria-invalid={!!signupForm.formState.errors.lastName}
                   />
                   {signupForm.formState.errors.lastName && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signupForm.formState.errors.lastName.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{signupForm.formState.errors.lastName.message}</p>
                   )}
                 </div>
 
@@ -230,9 +220,7 @@ export function Auth() {
                     aria-invalid={!!signupForm.formState.errors.email}
                   />
                   {signupForm.formState.errors.email && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signupForm.formState.errors.email.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{signupForm.formState.errors.email.message}</p>
                   )}
                 </div>
 
@@ -246,9 +234,7 @@ export function Auth() {
                     aria-invalid={!!signupForm.formState.errors.password}
                   />
                   {signupForm.formState.errors.password && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {signupForm.formState.errors.password.message}
-                    </p>
+                    <p className="mt-1 text-sm text-destructive">{signupForm.formState.errors.password.message}</p>
                   )}
                 </div>
 
