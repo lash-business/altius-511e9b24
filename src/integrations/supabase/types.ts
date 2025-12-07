@@ -458,10 +458,6 @@ export type Database = {
         Args: { p_test_id: string }
         Returns: number
       }
-      OLD_generate_workouts_for_test: {
-        Args: { p_test_id: string }
-        Returns: number
-      }
       owner_of_workout: { Args: { p_workout_id: string }; Returns: string }
     }
     Enums: {
