@@ -86,8 +86,8 @@ export function Auth() {
       if (error) throw error;
 
       toast({
-        title: "Account created",
-        description: "Please check your email to confirm your account",
+        title: "Check your email", // Neutral title
+        description: "If an account doesn't already exist, we've sent a confirmation link.", // Educates the user
       });
     } catch (error: any) {
       toast({
