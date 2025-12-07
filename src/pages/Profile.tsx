@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { validateProfileField } from "@/lib/validations/health";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ProfileFormSection } from "@/components/profile/ProfileFormSection";
@@ -194,6 +195,10 @@ export function Profile() {
             onSave={async (value) => {
               const feet = parseInt(value) || 0;
               const totalInches = feet * 12 + heightRemainingInches;
+              const validation = validateProfileField("height", totalInches);
+              if (!validation.success) {
+                throw new Error(validation.error);
+              }
               await updateUserField("height_value_in", totalInches);
             }}
             type="number"
@@ -206,6 +211,10 @@ export function Profile() {
             onSave={async (value) => {
               const inches = parseInt(value) || 0;
               const totalInches = heightFeet * 12 + inches;
+              const validation = validateProfileField("height", totalInches);
+              if (!validation.success) {
+                throw new Error(validation.error);
+              }
               await updateUserField("height_value_in", totalInches);
             }}
             type="number"
@@ -218,9 +227,17 @@ export function Profile() {
           <AutoSaveInput
             label="Pounds (lbs)"
             value={profile.weight_value_lb?.toString() || ""}
-            onSave={(value) => updateUserField("weight_value_lb", parseInt(value) || null)}
+            onSave={async (value) => {
+              const weight = parseInt(value) || 0;
+              const validation = validateProfileField("weight", weight);
+              if (!validation.success) {
+                throw new Error(validation.error);
+              }
+              await updateUserField("weight_value_lb", weight);
+            }}
             type="number"
-            min="0"
+            min="50"
+            max="700"
           />
         </ProfileFormSection>
 
