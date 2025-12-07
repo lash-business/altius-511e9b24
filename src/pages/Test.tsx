@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { strengthTestSchema } from "@/lib/validations/health";
+import { z } from "zod";
 import { TestDateStep } from "@/components/onboarding/TestDateStep";
 import { QuadricepsStep } from "@/components/onboarding/QuadricepsStep";
 import { HamstringsStep } from "@/components/onboarding/HamstringsStep";
@@ -88,6 +90,31 @@ export function Test() {
     if (!user || !data.testDate) return;
     setIsSubmitting(true);
     try {
+      // Validate strength measurements with Zod
+      const testDateSchema = z.date({ required_error: "Test date is required" });
+      const dateValidation = testDateSchema.safeParse(data.testDate);
+      if (!dateValidation.success) {
+        toast({
+          title: "Validation Error",
+          description: "Please select a valid test date",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const measurementValidation = strengthTestSchema.safeParse(data);
+      if (!measurementValidation.success) {
+        const firstError = measurementValidation.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const birthDate = data.birthDate;
       const gender = data.gender;
       if (!birthDate || !gender) {

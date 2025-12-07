@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { onboardingSchema } from "@/lib/validations/health";
 import { WelcomeStep } from "@/components/onboarding/WelcomeStep";
 import { BirthDateStep } from "@/components/onboarding/BirthDateStep";
 import { HeightStep } from "@/components/onboarding/HeightStep";
@@ -135,6 +136,19 @@ export function Onboarding() {
     setIsSubmitting(true);
 
     try {
+      // Validate all data with Zod before saving
+      const validation = onboardingSchema.safeParse(data);
+      if (!validation.success) {
+        const firstError = validation.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Calculate age
       const age = Math.floor((new Date().getTime() - data.birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
       
