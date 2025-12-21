@@ -92,14 +92,9 @@ export function Training() {
         }[];
 
         const totalWorkouts = typedWorkouts.length;
-        const completedWorkouts = typedWorkouts.filter(
-          (w) => w.completed_at != null
-        ).length;
+        const completedWorkouts = typedWorkouts.filter((w) => w.completed_at != null).length;
 
-        const maxWeek = typedWorkouts.reduce(
-          (max, w) => Math.max(max, w.week ?? 0),
-          0
-        );
+        const maxWeek = typedWorkouts.reduce((max, w) => Math.max(max, w.week ?? 0), 0);
 
         // Earliest workout with no completed_at
         const nextWorkout = typedWorkouts.find((w) => w.completed_at == null);
@@ -128,9 +123,7 @@ export function Training() {
         let cooldownRemaining: string | undefined;
 
         if (lastCompletedWorkout?.completed_at) {
-          const completedTime = new Date(
-            lastCompletedWorkout.completed_at
-          ).getTime();
+          const completedTime = new Date(lastCompletedWorkout.completed_at).getTime();
           const now = Date.now();
           const diff = now - completedTime;
 
@@ -138,24 +131,19 @@ export function Training() {
             isLocked = true;
             const remainingMs = TWELVE_HOURS_MS - diff;
             const hours = Math.floor(remainingMs / (60 * 60 * 1000));
-            const minutes = Math.round(
-              (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
-            );
-            cooldownRemaining = `${hours} hour${
-              hours === 1 ? "" : "s"
-            } ${minutes.toString().padStart(2, "0")} minute${
+            const minutes = Math.round((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+            cooldownRemaining = `${hours} hour${hours === 1 ? "" : "s"} ${minutes.toString().padStart(2, "0")} minute${
               minutes === 1 ? "" : "s"
             }`;
           }
         }
 
         // 3. Exercises in the next workout
-        const { data: userExercises, error: userExercisesError } =
-          await supabase
-            .from("user_exercises")
-            .select("id, exercise_id, completed_at, order")
-            .eq("workout_id", nextWorkout.id)
-            .order("order", { ascending: true });
+        const { data: userExercises, error: userExercisesError } = await supabase
+          .from("user_exercises")
+          .select("id, exercise_id, completed_at, order")
+          .eq("workout_id", nextWorkout.id)
+          .order("order", { ascending: true });
 
         if (userExercisesError) throw userExercisesError;
 
@@ -167,17 +155,10 @@ export function Training() {
         }[];
 
         const exerciseIds = Array.from(
-          new Set(
-            typedUserExercises
-              .map((ue) => ue.exercise_id)
-              .filter((id): id is string => !!id)
-          )
+          new Set(typedUserExercises.map((ue) => ue.exercise_id).filter((id): id is string => !!id)),
         );
 
-        let exercisesById = new Map<
-          string,
-          { id: string; name: string; sets: number | null }
-        >();
+        let exercisesById = new Map<string, { id: string; name: string; sets: number | null }>();
 
         if (exerciseIds.length > 0) {
           const { data: exercises, error: exercisesError } = await supabase
@@ -195,14 +176,12 @@ export function Training() {
                 name: (ex.name as string) || "Exercise",
                 sets: (ex.sets as number | null) ?? null,
               },
-            ])
+            ]),
           );
         }
 
         const exercises = typedUserExercises.map((ue) => {
-          const exercise = ue.exercise_id
-            ? exercisesById.get(ue.exercise_id)
-            : undefined;
+          const exercise = ue.exercise_id ? exercisesById.get(ue.exercise_id) : undefined;
           return {
             id: ue.id,
             name: exercise?.name ?? "Exercise",
@@ -210,9 +189,7 @@ export function Training() {
           };
         });
 
-        const hasExerciseProgress = typedUserExercises.some(
-          (ue) => ue.completed_at != null
-        );
+        const hasExerciseProgress = typedUserExercises.some((ue) => ue.completed_at != null);
 
         const summary: WorkoutSummary = {
           testId: latestTest.id,
@@ -246,9 +223,7 @@ export function Training() {
   const progressRatio = useMemo(() => {
     if (viewState.status !== "ready") return 0;
     if (viewState.data.totalWorkouts === 0) return 0;
-    return (
-      viewState.data.completedWorkouts / viewState.data.totalWorkouts
-    );
+    return viewState.data.completedWorkouts / viewState.data.totalWorkouts;
   }, [viewState]);
 
   const headingText = useMemo(() => {
@@ -259,21 +234,16 @@ export function Training() {
   const buttonLabel = useMemo(() => {
     if (viewState.status !== "ready") return "Start Workout";
     if (viewState.data.isLocked) return "Start Workout";
-    return viewState.data.hasExerciseProgress
-      ? "Continue Workout"
-      : "Start Workout";
+    return viewState.data.hasExerciseProgress ? "Continue Workout" : "Start Workout";
   }, [viewState]);
 
   const handleStartWorkout = () => {
     if (viewState.status !== "ready" || viewState.data.isLocked) return;
-    navigate("/workout", { replace: true });
+    navigate("/workout");
   };
 
   const renderBlankState = (reason: "noTest" | "allCompleted") => {
-    const title =
-      reason === "allCompleted"
-        ? "Upload your next test"
-        : "Upload your first test";
+    const title = reason === "allCompleted" ? "Upload your next test" : "Upload your first test";
     const description =
       reason === "allCompleted"
         ? "You’ve completed all workouts for your latest test. Upload a new test to get your next training block."
@@ -287,17 +257,10 @@ export function Training() {
               <Activity className="h-8 w-8 text-muted-foreground" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight">
-                {title}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {description}
-              </p>
+              <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+              <p className="text-sm text-muted-foreground">{description}</p>
             </div>
-            <Button
-              className="w-full"
-              onClick={() => navigate("/test")}
-            >
+            <Button className="w-full" onClick={() => navigate("/test")}>
               Upload Test
             </Button>
           </CardContent>
@@ -343,11 +306,7 @@ export function Training() {
             </p>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Start</span>
-              {viewState.data.totalWeeks ? (
-                <span>Stage {viewState.data.totalWeeks}</span>
-              ) : (
-                <span>End</span>
-              )}
+              {viewState.data.totalWeeks ? <span>Stage {viewState.data.totalWeeks}</span> : <span>End</span>}
             </div>
             <div className="h-2 w-full rounded-full bg-muted">
               <div
@@ -360,9 +319,7 @@ export function Training() {
           {/* Today / Next workout */}
           <section className="space-y-4">
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                {headingText}
-              </h2>
+              <h2 className="text-2xl font-semibold tracking-tight">{headingText}</h2>
               <div className="flex flex-wrap gap-3 pt-1">
                 <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium">
                   <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-background">
@@ -373,10 +330,7 @@ export function Training() {
                 <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium">
                   <Zap className="h-3.5 w-3.5" />
                   <span>
-                    {viewState.data.exercises.length}{" "}
-                    {viewState.data.exercises.length === 1
-                      ? "exercise"
-                      : "exercises"}
+                    {viewState.data.exercises.length} {viewState.data.exercises.length === 1 ? "exercise" : "exercises"}
                   </span>
                 </div>
               </div>
@@ -385,22 +339,15 @@ export function Training() {
             {/* Exercise list */}
             <div className="space-y-3">
               {viewState.data.exercises.map((exercise) => (
-                <Card
-                  key={exercise.id}
-                  className="border border-muted shadow-none"
-                >
+                <Card key={exercise.id} className="border border-muted shadow-none">
                   <CardContent className="flex items-center justify-between gap-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                         <Zap className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <p className="text-sm font-medium leading-snug">
-                        {exercise.name}
-                      </p>
+                      <p className="text-sm font-medium leading-snug">{exercise.name}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground whitespace-nowrap">
-                      {exercise.sets ?? 3} sets
-                    </p>
+                    <p className="text-xs text-muted-foreground whitespace-nowrap">{exercise.sets ?? 3} sets</p>
                   </CardContent>
                 </Card>
               ))}
@@ -428,4 +375,3 @@ export function Training() {
     </>
   );
 }
-
