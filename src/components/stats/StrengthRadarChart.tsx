@@ -114,7 +114,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           <PolarGrid
             radialLines
             stroke="hsl(var(--muted-foreground))"
-            strokeOpacity={0.28}
+            strokeOpacity={0.5}
             strokeWidth={1}
             strokeDasharray="1 5"
           />
