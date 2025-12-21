@@ -111,7 +111,13 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           startAngle={90 - 22.5}
           endAngle={-270 - 22.5}
         >
-          <PolarGrid stroke="hsl(var(--muted))" strokeDasharray="2 4" strokeOpacity={0.25} radialLines />
+          <PolarGrid
+            radialLines
+            stroke="hsl(var(--muted-foreground))"
+            strokeOpacity={0.28}
+            strokeWidth={1}
+            strokeDasharray="1 5"
+          />
           <PolarAngleAxis
             dataKey="axisLabel"
             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
