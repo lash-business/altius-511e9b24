@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -7,6 +8,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   ReferenceLine,
+  TooltipProps,
 } from "recharts";
 
 export interface MuscleSymmetryDatum {
@@ -20,6 +22,71 @@ interface MuscleSymmetryProfileChartProps {
 }
 
 export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartProps) {
+  const symmetryDiffByName = useMemo(() => {
+    return data.reduce<Record<string, number>>((acc, datum) => {
+      acc[datum.name] = Math.abs(datum.leftPct - datum.rightPct);
+      return acc;
+    }, {});
+  }, [data]);
+
+  const lowestSymmetryNames = useMemo(() => {
+    const entries = Object.entries(symmetryDiffByName).sort((a, b) => a[1] - b[1]);
+    return new Set(entries.slice(0, Math.min(2, entries.length)).map(([name]) => name));
+  }, [symmetryDiffByName]);
+
+  const renderTooltip = useCallback(
+    ({ active, payload, label }: TooltipProps<number, string>) => {
+      if (!active || !payload || payload.length === 0) return null;
+
+      const left = payload.find((p) => p.name === "Left")?.value as number | undefined;
+      const right = payload.find((p) => p.name === "Right")?.value as number | undefined;
+      const hasBoth = typeof left === "number" && typeof right === "number";
+      const diff = hasBoth ? Math.abs(left - right) : undefined;
+      const weakerSide =
+        hasBoth && left !== right ? (left < right ? "Left side weaker" : "Right side weaker") : "No weaker side";
+      const highlight = label ? lowestSymmetryNames.has(label) : false;
+
+      return (
+        <div
+          className="rounded-md border px-3 py-2 shadow-sm"
+          style={{
+            backgroundColor: "hsl(var(--card))",
+            borderColor: highlight ? "hsl(var(--chart-right))" : "hsl(var(--border))",
+          }}
+        >
+          <div className="text-xs font-medium text-muted-foreground">{label}</div>
+          <div className="mt-1 space-y-1">
+            {payload.map((entry) => (
+              <div key={entry.name} className="flex items-center justify-between gap-2 text-xs">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
+                  />
+                  <span>{entry.name}</span>
+                </span>
+                <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
+              </div>
+            ))}
+          </div>
+          {typeof diff === "number" && (
+            <div
+              className={`mt-2 text-xs ${highlight ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+            >
+              {`Difference: ${diff.toFixed(0)}% · ${weakerSide}`}
+              {highlight ? (
+                <span className="ml-2 rounded bg-amber-200 px-1 py-0.5 text-[10px] font-semibold text-amber-900">
+                  Top 2 symmetry
+                </span>
+              ) : null}
+            </div>
+          )}
+        </div>
+      );
+    },
+    [lowestSymmetryNames]
+  );
+
   return (
     <div className="w-full h-64">
       <ResponsiveContainer width="100%" height="100%">
@@ -32,28 +99,7 @@ export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartP
             tickFormatter={(value) => `${Math.round(value)}%`}
           />
           <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-          <RechartsTooltip
-            formatter={(value: any, name: any) => {
-              const pct = value as number;
-              const toTarget = 100 - pct;
-              const side = typeof name === "string" ? name : "";
-              const direction = toTarget >= 0 ? "to target" : "above target";
-              const delta = Math.abs(toTarget);
-              return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
-            }}
-            contentStyle={{
-              backgroundColor: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: "var(--radius)",
-              color: "hsl(var(--foreground))",
-            }}
-            labelStyle={{
-              color: "hsl(var(--muted-foreground))",
-            }}
-            itemStyle={{
-              color: "hsl(var(--foreground))",
-            }}
-          />
+          <RechartsTooltip content={renderTooltip} />
           <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
           <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
         </BarChart>
