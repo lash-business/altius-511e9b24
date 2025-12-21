@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -410,7 +409,8 @@ export function Stats() {
               <div className="flex-1 space-y-2">
                 <h1 className="text-3xl font-bold">Your Flow8 Profile</h1>
                 <p className="text-sm text-muted-foreground max-w-xl">
-                  Learn about your profile, understand why your results matter, and begin your journey toward better performance and fewer injuries.
+                  Learn about your profile, understand why your results matter, and begin your journey toward better
+                  performance and fewer injuries.
                 </p>
                 {latestTestDate && (
                   <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
