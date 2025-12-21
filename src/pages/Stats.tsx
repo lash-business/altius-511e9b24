@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, TrendingUp, Target } from "lucide-react";
+import { TrendingUp, Target } from "lucide-react";
 import { SymmetryChart } from "@/components/stats/SymmetryChart";
 import { BalanceChart } from "@/components/stats/BalanceChart";
 import { TrendChart } from "@/components/stats/TrendChart";
@@ -397,148 +397,76 @@ export function Stats() {
   })();
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 space-y-6">
-      {/* Hero Section */}
+    <div className="container mx-auto px-4 py-8 pb-24 space-y-8">
+      {/* Primary focus: Strength Profile */}
       <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardContent className="p-8">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Trophy className="h-8 w-8 text-primary" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <h1 className="text-3xl font-bold">Your Flow8 Profile</h1>
-                <p className="text-sm text-muted-foreground max-w-xl">
-                  Learn about your profile, understand why your results matter, and begin your journey toward better
-                  performance and fewer injuries.
-                </p>
-                {latestTestDate && (
-                  <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
-                    <span className="font-medium text-muted-foreground">Latest strength test:</span>
-                    <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
-                  </div>
-                )}
-              </div>
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle>Flow8 Strength Profile</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Your core view: see strength vs target for each muscle/side and spot where to push next.
+              </p>
             </div>
-
-            {/* Top priorities */}
-            {topIssues.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-sm font-medium">
-                  Top focus areas for this block
-                  <span className="font-normal text-muted-foreground"> – start here before adding more volume.</span>
-                </p>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {topIssues.map((issue, idx) => (
-                    <div
-                      key={`${issue.type}-${issue.muscleKey}-${idx}`}
-                      className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge
-                          variant="outline"
-                          className={
-                            issue.type === "Strength"
-                              ? "text-primary border-primary/40"
-                              : issue.type === "Symmetry"
-                                ? "text-amber-500 border-amber-500/40"
-                                : "text-destructive border-destructive/40"
-                          }
-                        >
-                          {issue.type}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          Score: {Math.round(issue.relativeScore)}/100
-                        </span>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold">{issue.muscleLabel}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {Math.round(issue.severityPoints)} points below ideal.
-                        </p>
-                        <p className="text-xs text-muted-foreground">{issue.description}</p>
-                        <p className="text-xs text-muted-foreground italic">
-                          See details in{" "}
-                          {issue.type === "Strength"
-                            ? "Strength vs Target"
-                            : issue.type === "Symmetry"
-                              ? "Left vs Right Balance"
-                              : "Muscle Balance Ratios"}
-                          .
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {latestTestDate && (
+              <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
+                <span className="font-medium text-muted-foreground">Latest strength test:</span>
+                <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
               </div>
             )}
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <StrengthRadarChart data={strengthRadarData} />
         </CardContent>
       </Card>
 
-      {/* Strength Profile & Detail View */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Strength Profile (Radar) */}
-        <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
-          <CardHeader>
-            <CardTitle>Flow8 Strength Profile</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Each spoke shows strength for a specific muscle and side compared to your target. The outer ring is 100;
-              values above 100 are capped visually but still shown in the tooltip.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <StrengthRadarChart data={strengthRadarData} />
-          </CardContent>
-        </Card>
-
-        {/* Strength vs Target (detail view) */}
-        <Card className="border-2">
-          <CardHeader>
-            <CardTitle>Flow8 Muscle Symmetry Profile</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
-              side is from the 100 line.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="name" className="text-xs" />
-                  <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
-                  <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-                  <RechartsTooltip
-                    formatter={(value: any, name: any) => {
-                      const pct = value as number;
-                      const toTarget = 100 - pct;
-                      const side = typeof name === "string" ? name : "";
-                      const direction = toTarget >= 0 ? "to target" : "above target";
-                      const delta = Math.abs(toTarget);
-                      return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
-                    }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "var(--radius)",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    labelStyle={{
-                      color: "hsl(var(--muted-foreground))",
-                    }}
-                    itemStyle={{
-                      color: "hsl(var(--foreground))",
-                    }}
-                  />
-                  <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
-                  <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Strength vs Target (detail view) */}
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle>Flow8 Muscle Symmetry Profile</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
+            side is from the 100 line.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={strengthChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
+                <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+                <RechartsTooltip
+                  formatter={(value: any, name: any) => {
+                    const pct = value as number;
+                    const toTarget = 100 - pct;
+                    const side = typeof name === "string" ? name : "";
+                    const direction = toTarget >= 0 ? "to target" : "above target";
+                    const delta = Math.abs(toTarget);
+                    return [`${pct.toFixed(0)}% (${delta.toFixed(0)}% ${direction})`, `${side} side`];
+                  }}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "var(--radius)",
+                    color: "hsl(var(--foreground))",
+                  }}
+                  labelStyle={{
+                    color: "hsl(var(--muted-foreground))",
+                  }}
+                  itemStyle={{
+                    color: "hsl(var(--foreground))",
+                  }}
+                />
+                <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
+                <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Symmetry & Balance */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -592,6 +520,56 @@ export function Stats() {
                 {trendDirectionLabel}. Each point shows your overall strength vs target (0–140%) for that test.
               </p>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Focus areas (bottom, no scores) */}
+      {topIssues.length > 0 && (
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Your Flow8 Focus Areas</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Start with these priorities before adding more volume or intensity.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2">
+              {topIssues.map((issue, idx) => (
+                <div
+                  key={`${issue.type}-${issue.muscleKey}-${idx}`}
+                  className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge
+                      variant="outline"
+                      className={
+                        issue.type === "Strength"
+                          ? "text-primary border-primary/40"
+                          : issue.type === "Symmetry"
+                            ? "text-amber-500 border-amber-500/40"
+                            : "text-destructive border-destructive/40"
+                      }
+                    >
+                      {issue.type}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{issue.muscleLabel}</p>
+                    <p className="text-xs text-muted-foreground">{issue.description}</p>
+                    <p className="text-xs text-muted-foreground italic">
+                      See details in{" "}
+                      {issue.type === "Strength"
+                        ? "Strength vs Target"
+                        : issue.type === "Symmetry"
+                          ? "Left vs Right Balance"
+                          : "Muscle Balance Ratios"}
+                      .
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
