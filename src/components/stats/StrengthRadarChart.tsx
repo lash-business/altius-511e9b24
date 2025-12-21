@@ -53,6 +53,46 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
     );
   };
 
+  // Build a smooth closed path (Catmull-Rom -> Bezier) to soften radar corners
+  const buildSmoothClosedPath = (points: { x: number; y: number }[], tension = 0.25) => {
+    if (!points || points.length < 2) return "";
+    const extended = [points[points.length - 1], ...points, points[0], points[1]];
+    let d = `M ${points[0].x} ${points[0].y}`;
+
+    for (let i = 1; i <= points.length; i++) {
+      const p0 = extended[i - 1];
+      const p1 = extended[i];
+      const p2 = extended[i + 1];
+      const p3 = extended[i + 2];
+
+      const cp1x = p1.x + ((p2.x - p0.x) * tension) / 6;
+      const cp1y = p1.y + ((p2.y - p0.y) * tension) / 6;
+      const cp2x = p2.x - ((p3.x - p1.x) * tension) / 6;
+      const cp2y = p2.y - ((p3.y - p1.y) * tension) / 6;
+
+      d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
+    }
+
+    return `${d} Z`;
+  };
+
+  const smoothRadarShape = (props: any) => {
+    const { points, stroke, fill, fillOpacity, strokeWidth } = props;
+    const path = buildSmoothClosedPath(points);
+    if (!path) return null;
+    return (
+      <path
+        d={path}
+        fill={fill}
+        fillOpacity={fillOpacity}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    );
+  };
+
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">
@@ -126,8 +166,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             fill="none"
             strokeDasharray="4 4"
             strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            shape={smoothRadarShape}
             isAnimationActive={false}
           >
             <LabelList
@@ -144,8 +183,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             fill="hsl(var(--primary))"
             fillOpacity={0.25}
             strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            shape={smoothRadarShape}
             isAnimationActive={false}
           >
             <LabelList
