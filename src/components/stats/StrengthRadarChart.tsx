@@ -54,7 +54,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
   };
 
   // Build a smooth closed path (Catmull-Rom -> Bezier) to soften radar corners
-  const buildSmoothClosedPath = (points: { x: number; y: number }[], tension = 0.45) => {
+  const buildSmoothClosedPath = (points: { x: number; y: number }[], tension = 0.75) => {
     if (!points || points.length < 2) return "";
     const extended = [points[points.length - 1], ...points, points[0], points[1]];
     let d = `M ${points[0].x} ${points[0].y}`;
@@ -113,10 +113,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           endAngle={-270 - 22.5}
         >
           <PolarGrid stroke="hsl(var(--muted))" strokeDasharray="3 3" radialLines />
-          <PolarAngleAxis
-            dataKey="axisLabel"
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-          />
+          <PolarAngleAxis dataKey="axisLabel" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
           <PolarRadiusAxis
             angle={90}
             domain={[0, 125]}
@@ -150,11 +147,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
                         <span className="font-medium">{point.normTarget.toFixed(1)}</span>
                       </div>
                     )}
-                    {point.measurementName && (
-                      <div className="text-muted-foreground mt-1">
-                        {point.measurementName}
-                      </div>
-                    )}
+                    {point.measurementName && <div className="text-muted-foreground mt-1">{point.measurementName}</div>}
                   </div>
                 </div>
               );
@@ -170,12 +163,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             shape={smoothRadarShape}
             isAnimationActive={false}
           >
-            <LabelList
-              dataKey="normTarget"
-              position="top"
-              offset={6}
-              content={renderTargetLabel}
-            />
+            <LabelList dataKey="normTarget" position="top" offset={6} content={renderTargetLabel} />
           </Radar>
 
           <Radar
@@ -187,17 +175,10 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             shape={smoothRadarShape}
             isAnimationActive={false}
           >
-            <LabelList
-              dataKey="rawValue"
-              position="top"
-              offset={6}
-              content={renderRawLabel}
-            />
+            <LabelList dataKey="rawValue" position="top" offset={6} content={renderRawLabel} />
           </Radar>
         </RadarChart>
       </ResponsiveContainer>
     </div>
   );
 }
-
-
