@@ -1,4 +1,12 @@
-import { RadarChart, Radar, PolarGrid, ResponsiveContainer, Tooltip as RechartsTooltip, LabelList } from "recharts";
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  LabelList,
+} from "recharts";
 
 interface StrengthRadarPoint {
   axisLabel: string;
@@ -104,6 +112,12 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           endAngle={-270 - 22.5}
         >
           <PolarGrid stroke="hsl(var(--muted))" strokeDasharray="3 3" radialLines />
+          <PolarAngleAxis
+            dataKey="axisLabel"
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+            tickLine={false}
+            axisLine={false}
+          />
           <RechartsTooltip
             content={({ active, payload }) => {
               if (!active || !payload || payload.length === 0) return null;
