@@ -1,4 +1,15 @@
-import { Progress } from "@/components/ui/progress";
+import { useCallback, useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  TooltipProps,
+} from "recharts";
 
 interface BalanceData {
   muscle_group: string;
@@ -26,81 +37,99 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     return names[name] || name;
   };
 
-  // percent_diff is stored 0–1 in the DB; convert to 0–100 for thresholding.
-  const getDiffColor = (percentDiff01: number) => {
-    const absDiff = Math.abs(percentDiff01 * 100);
-    if (absDiff <= 10) return "text-primary"; // Well balanced
-    if (absDiff <= 20) return "text-amber-500"; // Moderate imbalance
-    return "text-destructive"; // High imbalance
-  };
-
   const getSideLabel = (side: string) => {
-    if (side === "left") return "Left side";
-    if (side === "right") return "Right side";
+    if (side === "left") return "Left";
+    if (side === "right") return "Right";
     return side;
   };
 
-  const leftComparisons = data.filter((item) => item.left_right === "left");
-  const rightComparisons = data.filter((item) => item.left_right === "right");
+  const chartData = useMemo(() => {
+    return data.map((item) => {
+      const m1Label = getMuscleDisplayName(item.muscle1);
+      const m2Label = getMuscleDisplayName(item.muscle2);
+      return {
+        name: `${m1Label} vs ${m2Label} (${getSideLabel(item.left_right)})`,
+        muscle1Label: m1Label,
+        muscle2Label: m2Label,
+        muscle1Pct: (item.norm_percent1 ?? 0) * 100,
+        muscle2Pct: (item.norm_percent2 ?? 0) * 100,
+      };
+    });
+  }, [data]);
+
+  const renderTooltip = useCallback(
+    ({ active, payload, label }: TooltipProps<number, string>) => {
+      if (!active || !payload || payload.length === 0) return null;
+
+      const m1 = payload.find((p) => p.dataKey === "muscle1Pct");
+      const m2 = payload.find((p) => p.dataKey === "muscle2Pct");
+      const v1 = m1?.value as number | undefined;
+      const v2 = m2?.value as number | undefined;
+      const hasBoth = typeof v1 === "number" && typeof v2 === "number";
+      const diff = hasBoth ? Math.abs(v1 - v2) : undefined;
+      const weakerSide =
+        hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1?.name ?? "Muscle 1"} weaker` : `${m2?.name ?? "Muscle 2"} weaker`) : "No weaker side";
+      const isHighDiff = typeof diff === "number" && diff > 20;
+
+      return (
+        <div
+          className="rounded-md border px-3 py-2 shadow-sm"
+          style={{
+            backgroundColor: "hsl(var(--card))",
+            borderColor: "hsl(var(--border))",
+          }}
+        >
+          <div className="text-xs font-medium text-muted-foreground">{label}</div>
+          <div className="mt-1 space-y-1">
+            {payload.map((entry) => (
+              <div key={entry.name} className="flex items-center justify-between gap-2 text-xs">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
+                  />
+                  <span>{entry.name}</span>
+                </span>
+                <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
+              </div>
+            ))}
+          </div>
+          {typeof diff === "number" && (
+            <div
+              className={`mt-2 text-xs ${isHighDiff ? "font-semibold text-destructive" : "text-muted-foreground"}`}
+            >
+              {`Difference: ${diff.toFixed(0)}% · ${weakerSide}`}
+            </div>
+          )}
+        </div>
+      );
+    },
+    []
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        {[
-          { label: "Left side", items: leftComparisons },
-          { label: "Right side", items: rightComparisons },
-        ].map((group) => (
-          <div key={group.label} className="space-y-3">
-            <h3 className="font-semibold">{group.label}</h3>
-            <div className="space-y-3">
-              {group.items.map((item, idx) => {
-                const diff01 = item.percent_diff ?? 0;
-                const absDiffPercent = Math.abs(diff01 * 100);
-                const colorClass = getDiffColor(diff01);
-
-                return (
-                  <div
-                    key={`${group.label}-${idx}`}
-                    className="p-4 rounded-lg border-2 bg-card"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm">
-                        {getMuscleDisplayName(item.muscle1)} vs{" "}
-                        {getMuscleDisplayName(item.muscle2)}
-                      </span>
-                      <span className={`text-xs font-bold ${colorClass}`}>
-                        {absDiffPercent.toFixed(1)}% off ideal
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-xs text-muted-foreground">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span>{getMuscleDisplayName(item.muscle1)}</span>
-                          <span>{(item.norm_percent1 * 100).toFixed(0)}%</span>
-                        </div>
-                        <Progress
-                          value={Math.max(0, Math.min(140, item.norm_percent1 * 100))}
-                          className="bg-transparent"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span>{getMuscleDisplayName(item.muscle2)}</span>
-                          <span>{(item.norm_percent2 * 100).toFixed(0)}%</span>
-                        </div>
-                        <Progress
-                          value={Math.max(0, Math.min(140, item.norm_percent2 * 100))}
-                          className="bg-transparent"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="w-full h-72">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+          <XAxis dataKey="name" className="text-xs" />
+          <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${Math.round(value)}%`} />
+          <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+          <RechartsTooltip content={renderTooltip} />
+          <Bar
+            dataKey="muscle1Pct"
+            name={chartData[0]?.muscle1Label ?? "Muscle 1"}
+            radius={[4, 4, 0, 0]}
+            fill="hsl(var(--chart-left))"
+          />
+          <Bar
+            dataKey="muscle2Pct"
+            name={chartData[0]?.muscle2Label ?? "Muscle 2"}
+            radius={[4, 4, 0, 0]}
+            fill="hsl(var(--chart-right))"
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
