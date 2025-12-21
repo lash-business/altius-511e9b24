@@ -126,6 +126,8 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             fill="none"
             strokeDasharray="4 4"
             strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             isAnimationActive={false}
           >
             <LabelList
@@ -142,6 +144,8 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
             fill="hsl(var(--primary))"
             fillOpacity={0.25}
             strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             isAnimationActive={false}
           >
             <LabelList
