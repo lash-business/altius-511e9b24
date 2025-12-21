@@ -26,7 +26,11 @@ export function MuscleSymmetryBarChart({ data }: MuscleSymmetryBarChartProps) {
         <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis dataKey="name" className="text-xs" />
-          <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${value}%`} />
+          <YAxis
+            className="text-xs"
+            domain={[0, 140]}
+            tickFormatter={(value) => `${Math.round(value)}%`}
+          />
           <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
           <RechartsTooltip
             formatter={(value: any, name: any) => {
