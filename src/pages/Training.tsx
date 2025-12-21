@@ -266,7 +266,7 @@ export function Training() {
 
   const handleStartWorkout = () => {
     if (viewState.status !== "ready" || viewState.data.isLocked) return;
-    navigate("/workout");
+    navigate("/workout", { replace: true });
   };
 
   const renderBlankState = (reason: "noTest" | "allCompleted") => {
