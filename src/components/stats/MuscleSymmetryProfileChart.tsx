@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -22,18 +22,6 @@ interface MuscleSymmetryProfileChartProps {
 }
 
 export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartProps) {
-  const symmetryDiffByName = useMemo(() => {
-    return data.reduce<Record<string, number>>((acc, datum) => {
-      acc[datum.name] = Math.abs(datum.leftPct - datum.rightPct);
-      return acc;
-    }, {});
-  }, [data]);
-
-  const lowestSymmetryNames = useMemo(() => {
-    const entries = Object.entries(symmetryDiffByName).sort((a, b) => a[1] - b[1]);
-    return new Set(entries.slice(0, Math.min(2, entries.length)).map(([name]) => name));
-  }, [symmetryDiffByName]);
-
   const renderTooltip = useCallback(
     ({ active, payload, label }: TooltipProps<number, string>) => {
       if (!active || !payload || payload.length === 0) return null;
@@ -44,14 +32,14 @@ export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartP
       const diff = hasBoth ? Math.abs(left - right) : undefined;
       const weakerSide =
         hasBoth && left !== right ? (left < right ? "Left side weaker" : "Right side weaker") : "No weaker side";
-      const highlight = label ? lowestSymmetryNames.has(label) : false;
+      const isHighDiff = typeof diff === "number" && diff > 20;
 
       return (
         <div
           className="rounded-md border px-3 py-2 shadow-sm"
           style={{
             backgroundColor: "hsl(var(--card))",
-            borderColor: highlight ? "hsl(var(--chart-right))" : "hsl(var(--border))",
+            borderColor: "hsl(var(--border))",
           }}
         >
           <div className="text-xs font-medium text-muted-foreground">{label}</div>
@@ -71,20 +59,15 @@ export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartP
           </div>
           {typeof diff === "number" && (
             <div
-              className={`mt-2 text-xs ${highlight ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+              className={`mt-2 text-xs ${isHighDiff ? "font-semibold text-destructive" : "text-muted-foreground"}`}
             >
               {`Difference: ${diff.toFixed(0)}% · ${weakerSide}`}
-              {highlight ? (
-                <span className="ml-2 rounded bg-amber-200 px-1 py-0.5 text-[10px] font-semibold text-amber-900">
-                  Top 2 symmetry
-                </span>
-              ) : null}
             </div>
           )}
         </div>
       );
     },
-    [lowestSymmetryNames]
+    []
   );
 
   return (
