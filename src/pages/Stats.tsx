@@ -181,10 +181,10 @@ export function Stats() {
 
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
-      quad: "Quads",
-      ham: "Hamstrings",
-      glute: "Glutes",
-      abductor: "Hip Abductors",
+      quad: "Quad",
+      ham: "Ham",
+      glute: "Glute",
+      abductor: "Abductor",
     };
     return names[name] || name;
   };
