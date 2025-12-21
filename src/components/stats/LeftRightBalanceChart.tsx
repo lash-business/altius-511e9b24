@@ -8,11 +8,11 @@ interface SymmetryData {
   "Relative Score": number;
 }
 
-interface SymmetryChartProps {
+interface LeftRightBalanceChartProps {
   data: SymmetryData[];
 }
 
-export function SymmetryChart({ data }: SymmetryChartProps) {
+export function LeftRightBalanceChart({ data }: LeftRightBalanceChartProps) {
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
       quadriceps: "Quads",

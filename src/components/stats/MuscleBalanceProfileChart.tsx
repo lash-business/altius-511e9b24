@@ -11,11 +11,11 @@ interface BalanceData {
   relative_score: number;
 }
 
-interface BalanceChartProps {
+interface MuscleBalanceProfileChartProps {
   data: BalanceData[];
 }
 
-export function BalanceChart({ data }: BalanceChartProps) {
+export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartProps) {
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
       quadriceps: "Quads",

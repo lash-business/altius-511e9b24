@@ -5,11 +5,11 @@ interface TrendPoint {
   normPercent: number;
 }
 
-interface TrendChartProps {
+interface RecentTestsChartProps {
   data: TrendPoint[];
 }
 
-export function TrendChart({ data }: TrendChartProps) {
+export function RecentTestsChart({ data }: RecentTestsChartProps) {
   const formattedData = data.map((point) => ({
     ...point,
     label: new Date(point.date).toLocaleDateString(),

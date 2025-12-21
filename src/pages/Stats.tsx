@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target } from "lucide-react";
-import { SymmetryChart } from "@/components/stats/SymmetryChart";
-import { BalanceChart } from "@/components/stats/BalanceChart";
-import { TrendChart } from "@/components/stats/TrendChart";
-import { StrengthRadarChart } from "@/components/stats/StrengthRadarChart";
-import { MuscleSymmetryBarChart } from "@/components/stats/MuscleSymmetryBarChart";
+import { LeftRightBalanceChart } from "@/components/stats/LeftRightBalanceChart";
+import { MuscleBalanceProfileChart } from "@/components/stats/MuscleBalanceProfileChart";
+import { RecentTestsChart } from "@/components/stats/RecentTestsChart";
+import { StrengthProfileChart } from "@/components/stats/StrengthProfileChart";
+import { MuscleSymmetryProfileChart } from "@/components/stats/MuscleSymmetryProfileChart";
 
 interface StrengthData {
   muscle_group: string;
@@ -408,7 +408,7 @@ export function Stats() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <StrengthRadarChart data={strengthRadarData} />
+          <StrengthProfileChart data={strengthRadarData} />
         </CardContent>
       </Card>
 
@@ -422,7 +422,7 @@ export function Stats() {
           </p>
         </CardHeader>
         <CardContent>
-          <MuscleSymmetryBarChart data={strengthChartData} />
+          <MuscleSymmetryProfileChart data={strengthChartData} />
         </CardContent>
       </Card>
 
@@ -441,7 +441,7 @@ export function Stats() {
               </p>
             </CardHeader>
             <CardContent>
-              <SymmetryChart data={symmetryData} />
+              <LeftRightBalanceChart data={symmetryData} />
             </CardContent>
           </Card>
         )}
@@ -456,7 +456,7 @@ export function Stats() {
               </p>
             </CardHeader>
             <CardContent>
-              <BalanceChart data={balanceData} />
+              <MuscleBalanceProfileChart data={balanceData} />
             </CardContent>
           </Card>
         )}
@@ -472,7 +472,7 @@ export function Stats() {
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
-            <TrendChart data={trendData} />
+            <RecentTestsChart data={trendData} />
             {trendDirectionLabel && (
               <p className="text-xs text-muted-foreground">
                 {trendDirectionLabel}. Each point shows your overall strength vs target (0–140%) for that test.

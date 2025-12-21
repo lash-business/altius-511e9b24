@@ -15,11 +15,11 @@ export interface MuscleSymmetryDatum {
   rightPct: number;
 }
 
-interface MuscleSymmetryBarChartProps {
+interface MuscleSymmetryProfileChartProps {
   data: MuscleSymmetryDatum[];
 }
 
-export function MuscleSymmetryBarChart({ data }: MuscleSymmetryBarChartProps) {
+export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartProps) {
   return (
     <div className="w-full h-64">
       <ResponsiveContainer width="100%" height="100%">

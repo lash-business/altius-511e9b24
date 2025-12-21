@@ -19,11 +19,11 @@ interface StrengthRadarPoint {
   measurementName: string | null;
 }
 
-interface StrengthRadarChartProps {
+interface StrengthProfileChartProps {
   data: StrengthRadarPoint[];
 }
 
-export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
+export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
   const chartData = data?.map((point) => ({
     ...point,
     // Reference ring at 100 to make the outer edge clear
