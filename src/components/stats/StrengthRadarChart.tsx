@@ -29,7 +29,29 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
     ...point,
     // Reference ring at 100 to make the outer edge clear
     target: 100,
+    // Capped value for visual rendering (keep uncapped value for tooltip/labels)
+    displayValue: Math.min(125, point.value),
   }));
+
+  const renderTargetLabel = (props: any) => {
+    const { x, y, value } = props;
+    if (value == null || Number.isNaN(value)) return null;
+    return (
+      <text x={x} y={y} dy={-2} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize={10}>
+        {Math.round(value)}
+      </text>
+    );
+  };
+
+  const renderRawLabel = (props: any) => {
+    const { x, y, value } = props;
+    if (value == null || Number.isNaN(value)) return null;
+    return (
+      <text x={x} y={y} dy={-2} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={10}>
+        {Math.round(value)}
+      </text>
+    );
+  };
 
   if (!data || data.length === 0) {
     return (
@@ -56,9 +78,9 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           />
           <PolarRadiusAxis
             angle={90}
-            domain={[0, 100]}
-            tickCount={5}
-            tickFormatter={(value) => `${value}`}
+            domain={[0, 125]}
+            tickCount={6}
+            tickFormatter={(value) => (value === 125 ? "" : `${value}`)}
             tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
           />
           <RechartsTooltip
@@ -110,13 +132,12 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
               dataKey="normTarget"
               position="top"
               offset={6}
-              style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              formatter={(val: number | null) => (val != null ? val.toFixed(1) : "")}
+              content={renderTargetLabel}
             />
           </Radar>
 
           <Radar
-            dataKey="value"
+            dataKey="displayValue"
             stroke="hsl(var(--primary))"
             fill="hsl(var(--primary))"
             fillOpacity={0.25}
@@ -127,8 +148,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
               dataKey="rawValue"
               position="top"
               offset={6}
-              style={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
-              formatter={(val: number | null) => (val != null ? val.toFixed(1) : "")}
+              content={renderRawLabel}
             />
           </Radar>
         </RadarChart>
