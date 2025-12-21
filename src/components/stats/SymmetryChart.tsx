@@ -62,11 +62,12 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
           <Tooltip
             formatter={(value: any, _name, props: any) => {
               const diffPercent = value as number;
+              const diffRounded = Math.round(diffPercent);
               const { payload } = props;
               const left = payload.left as number;
               const right = payload.right as number;
               return [
-                `${diffPercent.toFixed(1)}% (positive = left stronger)`,
+                `${diffRounded}% (positive = left stronger)`,
                 "Percent difference",
                 <div className="mt-1 text-xs text-muted-foreground" key="details">
                   <div>Left: {left.toFixed(1)}</div>
@@ -114,7 +115,7 @@ export function SymmetryChart({ data }: SymmetryChartProps) {
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{getMuscleDisplayName(item["Muscle Group"])}</span>
                   <span className="text-sm font-bold" style={{ color }}>
-                    {absDiffPercent.toFixed(1)}% diff
+                    {Math.round(absDiffPercent)}% diff
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
