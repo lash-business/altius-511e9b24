@@ -180,14 +180,6 @@ export function Stats() {
     }
   };
 
-  const getMotivationalMessage = (score: number) => {
-    if (score >= 90) return "Exceptional! You're performing at elite level.";
-    if (score >= 80) return "Strong work! You're building serious power.";
-    if (score >= 70) return "Great progress! Keep pushing forward.";
-    if (score >= 60) return "You're on the right track! Stay consistent.";
-    return "Every rep counts! You're getting stronger.";
-  };
-
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
       quad: "Quads",
@@ -227,11 +219,6 @@ export function Stats() {
   }
 
   const aggregateStrength = strengthData.filter((item) => item.left_right === "NA");
-  const overallNormPercent =
-    aggregateStrength.length > 0
-      ? (aggregateStrength.reduce((sum, item) => sum + (item.norm_percent || 0), 0) / aggregateStrength.length) * 100
-      : 0;
-  const overallScore = Math.round(Math.min(140, Math.max(0, overallNormPercent)));
 
   // Use DB muscle_group keys for ordering; display names are mapped via getMuscleDisplayName.
   const muscleSortOrder: Record<string, number> = {
@@ -254,80 +241,6 @@ export function Stats() {
       rightPct,
     };
   });
-
-  const maxSymmetryGap =
-    symmetryData.length > 0
-      ? Math.max(...symmetryData.map((item) => Math.abs((item["Percent Diff"] ?? 0) * 100)))
-      : null;
-
-  const worstBalanceDiff =
-    balanceData.length > 0 ? Math.max(...balanceData.map((item) => Math.abs((item.percent_diff ?? 0) * 100))) : null;
-
-  const primaryStrengthBullet = (() => {
-    if (aggregateStrength.length === 0) return null;
-
-    const belowTarget = aggregateStrength
-      .filter((item) => (item.norm_percent || 0) < 1)
-      .map((item) => ({
-        name: getMuscleDisplayName(item.muscle_group),
-        deficit: Math.round((1 - (item.norm_percent || 0)) * 100),
-      }))
-      .sort((a, b) => b.deficit - a.deficit);
-
-    if (belowTarget.length > 0) {
-      const top = belowTarget[0];
-      return `${top.name} are ${top.deficit}% below target strength.`;
-    }
-
-    const aboveTarget = aggregateStrength
-      .filter((item) => (item.norm_percent || 0) > 1)
-      .map((item) => ({
-        name: getMuscleDisplayName(item.muscle_group),
-        surplus: Math.round(((item.norm_percent || 0) - 1) * 100),
-      }))
-      .sort((a, b) => b.surplus - a.surplus);
-
-    if (aboveTarget.length > 0) {
-      const top = aboveTarget[0];
-      return `${top.name} are ${top.surplus}% above target – great work.`;
-    }
-
-    return "All measured muscle groups are near their target strength.";
-  })();
-
-  const primarySymmetryBullet = (() => {
-    if (symmetryData.length === 0) return null;
-
-    const sorted = [...symmetryData].sort(
-      (a, b) => Math.abs((b["Percent Diff"] ?? 0) * 100) - Math.abs((a["Percent Diff"] ?? 0) * 100),
-    );
-
-    const top = sorted[0];
-    const diff01 = top["Percent Diff"] ?? 0;
-    const absDiff = Math.abs(diff01 * 100);
-    if (absDiff === 0) return "Left and right sides are well balanced overall.";
-
-    const muscleName = getMuscleDisplayName(top["Muscle Group"]);
-    const weakerSide = diff01 > 0 ? "right" : "left";
-    const strongerSide = weakerSide === "left" ? "right" : "left";
-
-    return `${weakerSide === "left" ? "Left" : "Right"} ${muscleName} is ${absDiff.toFixed(
-      1,
-    )}% weaker than the ${strongerSide} side – focus unilateral work on the weaker side.`;
-  })();
-
-  const weakestAxisBullet = (() => {
-    if (!strengthData || strengthData.length === 0) return null;
-    const sideRows = strengthData.filter((row) => row.left_right === "left" || row.left_right === "right");
-    if (sideRows.length === 0) return null;
-
-    const sorted = [...sideRows].sort((a, b) => (a.norm_percent ?? 0) - (b.norm_percent ?? 0));
-
-    const bottom = sorted[0];
-    const label = `${bottom.left_right === "left" ? "Left" : "Right"} ${getMuscleDisplayName(bottom.muscle_group)}`;
-    const pct = Math.round((bottom.norm_percent ?? 0) * 100);
-    return `${label} is currently your lowest at ${pct}.`;
-  })();
 
   // Radar chart data – one spoke per v_strength row (per measurement/side),
   // ordered to always follow: R Quad, R Ham, R Glute, R Abductor, L Abductor, L Glute, L Ham, L Quad.
@@ -358,7 +271,6 @@ export function Stats() {
     return sorted.map((row) => {
       const norm01 = row.norm_percent ?? 0;
       const normPercentRaw = norm01 * 100;
-      const normPercentCapped = Math.min(100, normPercentRaw);
 
       const sideLabel =
         row.left_right === "left"
@@ -371,7 +283,7 @@ export function Stats() {
 
       return {
         axisLabel: `${sideLabel} ${getMuscleDisplayName(row.muscle_group)}`,
-        value: normPercentCapped,
+        value: normPercentRaw,
         normPercentRaw,
         rawValue: row.raw_value ?? null,
         normTarget: row.norm_target ?? null,
@@ -473,28 +385,6 @@ export function Stats() {
     return selected;
   })();
 
-  const averageScore = (values: (number | null | undefined)[]) => {
-    const filtered = values.filter((v): v is number => typeof v === "number" && !Number.isNaN(v));
-    if (filtered.length === 0) return null;
-    const avg = filtered.reduce((sum, v) => sum + v, 0) / filtered.length;
-    return Math.max(0, Math.min(100, avg));
-  };
-
-  // Domain-level scores based purely on relative scores (0–100)
-  const strengthDomainScore = averageScore(strengthData.map((item) => item.relative_score));
-  const symmetryDomainScore = averageScore(symmetryData.map((item) => item["Relative Score"]));
-  const balanceDomainScore = averageScore(balanceData.map((item) => item.relative_score));
-
-  // Overall performance = average of all relative scores across all three views
-  const overallPerformanceScore = averageScore([
-    ...strengthData.map((item) => item.relative_score),
-    ...symmetryData.map((item) => item["Relative Score"]),
-    ...balanceData.map((item) => item.relative_score),
-  ]);
-
-  const domainScoreLabel = (score: number | null) =>
-    score == null ? "—" : `${Math.round(Math.max(0, Math.min(100, score)))} / 100`;
-
   const trendDelta =
     trendData.length > 1 ? trendData[trendData.length - 1].normPercent - trendData[0].normPercent : null;
 
@@ -518,10 +408,9 @@ export function Stats() {
                 <Trophy className="h-8 w-8 text-primary" />
               </div>
               <div className="flex-1 space-y-2">
-                <h1 className="text-3xl font-bold">Performance Dashboard</h1>
+                <h1 className="text-3xl font-bold">Your Flow8 Profile</h1>
                 <p className="text-sm text-muted-foreground max-w-xl">
-                  Snapshot of your latest strength test with a strength radar at the center and clear priorities for
-                  your next training block.
+                  Learn about your profile, understand why your results matter, and begin your journey toward better performance and fewer injuries.
                 </p>
                 {latestTestDate && (
                   <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
@@ -529,41 +418,6 @@ export function Stats() {
                     <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Overall & domain scores */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Overall performance
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold">
-                    {overallPerformanceScore == null ? "—" : Math.round(overallPerformanceScore)}
-                  </span>
-                  <span className="text-sm text-muted-foreground">/ 100</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{getMotivationalMessage(overallPerformanceScore ?? 0)}</p>
-              </div>
-              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
-                <span className="text-lg font-semibold">{domainScoreLabel(strengthDomainScore)}</span>
-                <p className="text-xs text-muted-foreground">Higher is better (0–100). </p>
-              </div>
-              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Symmetry</span>
-                <span className="text-lg font-semibold">{domainScoreLabel(symmetryDomainScore)}</span>
-                <p className="text-xs text-muted-foreground">Accounts for left–right differences.</p>
-              </div>
-              <div className="rounded-lg border bg-background/70 p-4 flex flex-col gap-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Balance ratios
-                </span>
-                <span className="text-lg font-semibold">{domainScoreLabel(balanceDomainScore)}</span>
-                <p className="text-xs text-muted-foreground">
-                  Key muscle pairings for sprinting and change of direction.
-                </p>
               </div>
             </div>
 
@@ -627,7 +481,7 @@ export function Stats() {
         {/* Strength Profile (Radar) */}
         <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
           <CardHeader>
-            <CardTitle>Strength Profile (vs Norms)</CardTitle>
+            <CardTitle>Flow8 Strength Profile</CardTitle>
             <p className="text-sm text-muted-foreground">
               Each spoke shows strength for a specific muscle and side compared to your target. The outer ring is 100;
               values above 100 are capped visually but still shown in the tooltip.
@@ -641,7 +495,7 @@ export function Stats() {
         {/* Strength vs Target (detail view) */}
         <Card className="border-2">
           <CardHeader>
-            <CardTitle>Strength vs Target (by Muscle Group)</CardTitle>
+            <CardTitle>Flow8 Muscle Symmetry Profile</CardTitle>
             <p className="text-sm text-muted-foreground">
               Bar view of strength for each muscle on each side. Use this to see left/right differences and how far each
               side is from the 100 line.
@@ -709,7 +563,7 @@ export function Stats() {
         {balanceData.length > 0 && (
           <Card className="border-2">
             <CardHeader>
-              <CardTitle>Muscle Balance Ratios</CardTitle>
+              <CardTitle>Flow8 Muscle Balance Profile</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
                 health.

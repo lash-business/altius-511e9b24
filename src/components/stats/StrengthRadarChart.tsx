@@ -6,11 +6,12 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
+  LabelList,
 } from "recharts";
 
 interface StrengthRadarPoint {
   axisLabel: string;
-  // 0–100, already capped for display
+  // Uncapped percent for display (can be > 100)
   value: number;
   // Uncapped percent for tooltip context
   normPercentRaw: number;
@@ -98,24 +99,38 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
           />
           {/* Outer reference ring at 100 */}
           <Radar
-            name="Target (100)"
             dataKey="target"
             stroke="hsl(var(--accent))"
             fill="none"
             strokeDasharray="4 4"
             strokeWidth={1.5}
             isAnimationActive={false}
-          />
+          >
+            <LabelList
+              dataKey="normTarget"
+              position="top"
+              offset={6}
+              style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+              formatter={(val: number | null) => (val != null ? val.toFixed(1) : "")}
+            />
+          </Radar>
 
           <Radar
-            name="Strength vs Norm"
             dataKey="value"
             stroke="hsl(var(--primary))"
             fill="hsl(var(--primary))"
             fillOpacity={0.25}
             strokeWidth={2}
             isAnimationActive={false}
-          />
+          >
+            <LabelList
+              dataKey="rawValue"
+              position="top"
+              offset={6}
+              style={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
+              formatter={(val: number | null) => (val != null ? val.toFixed(1) : "")}
+            />
+          </Radar>
         </RadarChart>
       </ResponsiveContainer>
     </div>
