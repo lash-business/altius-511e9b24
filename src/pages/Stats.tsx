@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target } from "lucide-react";
-import { LeftRightBalanceChart } from "@/components/stats/LeftRightBalanceChart";
+import { Target } from "lucide-react";
 import { MuscleBalanceProfileChart } from "@/components/stats/MuscleBalanceProfileChart";
 import { RecentTestsChart } from "@/components/stats/RecentTestsChart";
 import { StrengthProfileChart } from "@/components/stats/StrengthProfileChart";
@@ -427,40 +426,20 @@ export function Stats() {
       </Card>
 
       {/* Symmetry & Balance */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {symmetryData.length > 0 && (
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Left vs Right Balance
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Side-to-side balance supports efficient cutting mechanics and reduces injury risk, especially around the
-                knee and hip.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <LeftRightBalanceChart data={symmetryData} />
-            </CardContent>
-          </Card>
-        )}
-
-        {balanceData.length > 0 && (
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle>Flow8 Muscle Balance Profile</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
-                health.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <MuscleBalanceProfileChart data={balanceData} />
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {balanceData.length > 0 && (
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Flow8 Muscle Balance Profile</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Quad–glute and quad–ham ratios on each side highlight imbalances that affect sprinting speed and knee
+              health.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <MuscleBalanceProfileChart data={balanceData} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Trend Overview */}
       {trendData.length > 1 && (
