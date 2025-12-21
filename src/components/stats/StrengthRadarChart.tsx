@@ -54,7 +54,7 @@ export function StrengthRadarChart({ data }: StrengthRadarChartProps) {
   };
 
   // Build a smooth closed path (Catmull-Rom -> Bezier) to soften radar corners
-  const buildSmoothClosedPath = (points: { x: number; y: number }[], tension = 0.75) => {
+  const buildSmoothClosedPath = (points: { x: number; y: number }[], tension = 1.0) => {
     if (!points || points.length < 2) return "";
     const extended = [points[points.length - 1], ...points, points[0], points[1]];
     let d = `M ${points[0].x} ${points[0].y}`;
