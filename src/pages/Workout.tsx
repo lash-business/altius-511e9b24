@@ -646,6 +646,7 @@ export function Workout() {
 
         <div className="pt-4">
           <Button
+            type="button"
             className="flex w-full items-center justify-center gap-2 rounded-full text-base"
             variant={overallStatus.allComplete ? "default" : "outline"}
             onClick={handleSubmitWorkout}
@@ -679,10 +680,10 @@ export function Workout() {
             your progress?
           </p>
           <div className="mt-4 flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => setShowIncompleteConfirm(false)}>
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setShowIncompleteConfirm(false)}>
               Keep Editing
             </Button>
-            <Button variant="default" className="flex-1" onClick={handleSubmitWorkout} disabled={isSubmitting}>
+            <Button type="button" variant="default" className="flex-1" onClick={handleSubmitWorkout} disabled={isSubmitting}>
               Yes, Complete
             </Button>
           </div>
@@ -700,6 +701,7 @@ export function Workout() {
       <div className="fixed inset-x-0 bottom-0 border-t bg-background/95 pb-6 pt-4">
         <div className="mx-auto flex w-full max-w-md items-center justify-between px-6">
           <Button
+            type="button"
             variant="outline"
             size="icon"
             className="rounded-full"
@@ -720,6 +722,7 @@ export function Workout() {
           </div>
 
           <Button
+            type="button"
             variant={forwardIsPrimary ? "default" : "outline"}
             size="icon"
             className="rounded-full"
@@ -743,7 +746,7 @@ export function Workout() {
           <p className="text-sm text-muted-foreground">
             We couldn&apos;t load your workout. Please return to the Training page and try again.
           </p>
-          <Button variant="outline" className="mt-2" onClick={() => navigate("/home")}>
+          <Button type="button" variant="outline" className="mt-2" onClick={() => navigate("/home")}>
             Back to Training
           </Button>
         </div>
