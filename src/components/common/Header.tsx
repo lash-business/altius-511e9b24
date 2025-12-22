@@ -1,5 +1,5 @@
 //force update: 2025-10-19 14:30:00
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ interface HeaderProps {
 export function Header({ variant = "default" }: HeaderProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [userInitials, setUserInitials] = useState<string>("");
 
   useEffect(() => {
@@ -39,6 +40,10 @@ export function Header({ variant = "default" }: HeaderProps) {
   }, [user]);
 
   const handleBack = () => {
+    if (location.pathname === "/workout") {
+      navigate("/", { replace: true });
+      return;
+    }
     if (window.history.length > 1) {
       navigate(-1);
       return;
