@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Zap, Activity } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,7 +37,6 @@ const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 export function Training() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [viewState, setViewState] = useState<TrainingViewState>({
     status: "loading",
@@ -240,11 +239,7 @@ export function Training() {
 
   const handleStartWorkout = () => {
     if (viewState.status !== "ready" || viewState.data.isLocked) return;
-    // Avoid stacking duplicate /workout entries; replace if already there
-    navigate("/workout", {
-      state: { from: location.pathname + location.search },
-      replace: location.pathname === "/workout",
-    });
+    navigate("/workout");
   };
 
   const renderBlankState = (reason: "noTest" | "allCompleted") => {
