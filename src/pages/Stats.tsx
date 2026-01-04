@@ -395,7 +395,8 @@ export function Stats() {
             <div className="space-y-1">
               <CardTitle>Flow8 Strength Profile</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Your core view: see strength vs target for each muscle/side and spot where to push next.
+                Learn about your profile, understand why your results matter, and begin your journey toward better
+                performance and fewer injuries.
               </p>
             </div>
             {latestTestDate && (
