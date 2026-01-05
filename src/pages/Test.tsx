@@ -10,6 +10,7 @@ import { QuadricepsStep } from "@/components/onboarding/QuadricepsStep";
 import { HamstringsStep } from "@/components/onboarding/HamstringsStep";
 import { GlutesStep } from "@/components/onboarding/GlutesStep";
 import { AbductorsStep } from "@/components/onboarding/AbductorsStep";
+import { format as formatDate } from "date-fns";
 
 interface TestFlowData {
   testDate: Date | undefined;
@@ -32,7 +33,8 @@ export function Test() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [data, setData] = useState<TestFlowData>({
-    testDate: undefined,
+    // Default to today so the user doesn't have to "re-select" today's date.
+    testDate: new Date(),
     leftQuad: "",
     rightQuad: "",
     leftHamstring: "",
@@ -131,7 +133,11 @@ export function Test() {
 
       const { data: testRow, error: testError } = await supabase
         .from("tests")
-        .insert({ user_id: user.id, test_date: data.testDate.toISOString().split("T")[0] })
+        .insert({
+          user_id: user.id,
+          // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
+          test_date: formatDate(data.testDate, "yyyy-MM-dd"),
+        })
         .select()
         .single();
       if (testError || !testRow) throw testError;

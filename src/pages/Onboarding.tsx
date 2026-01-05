@@ -15,6 +15,7 @@ import { QuadricepsStep } from "@/components/onboarding/QuadricepsStep";
 import { HamstringsStep } from "@/components/onboarding/HamstringsStep";
 import { GlutesStep } from "@/components/onboarding/GlutesStep";
 import { AbductorsStep } from "@/components/onboarding/AbductorsStep";
+import { format as formatDate } from "date-fns";
 
 export interface OnboardingData {
   birthDate: Date | undefined;
@@ -45,7 +46,8 @@ export function Onboarding() {
     heightInches: "",
     weight: "",
     gender: "",
-    testDate: undefined,
+    // Default to today so the date step is immediately valid and matches the UI.
+    testDate: new Date(),
     leftQuad: "",
     rightQuad: "",
     leftHamstring: "",
@@ -159,7 +161,8 @@ export function Onboarding() {
       const { error: userError } = await supabase
         .from("users")
         .update({
-          birth_date: data.birthDate.toISOString().split("T")[0],
+          // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
+          birth_date: formatDate(data.birthDate, "yyyy-MM-dd"),
           height_value_in: totalHeightInches,
           weight_value_lb: parseInt(data.weight),
           gender: data.gender as "male" | "female",
@@ -173,7 +176,8 @@ export function Onboarding() {
         .from("tests")
         .insert({
           user_id: user.id,
-          test_date: data.testDate.toISOString().split("T")[0],
+          // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
+          test_date: formatDate(data.testDate, "yyyy-MM-dd"),
         })
         .select()
         .single();

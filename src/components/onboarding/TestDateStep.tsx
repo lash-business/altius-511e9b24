@@ -46,7 +46,7 @@ export function TestDateStep({ data, updateData, onNext, onBack, stepLabel }: Te
                 )}
               >
                 <CalendarIcon />
-                {data.testDate ? format(data.testDate, "PPP") : <span>Today</span>}
+                {data.testDate ? format(data.testDate, "PPP") : <span>Select a date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
