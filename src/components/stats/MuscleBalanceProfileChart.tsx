@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,6 +11,7 @@ import {
   ReferenceLine,
   TooltipProps,
 } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BalanceData {
   muscle_group: string;
@@ -27,7 +28,26 @@ interface MuscleBalanceProfileChartProps {
   data: BalanceData[];
 }
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+
+    setMatches(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+
+  return matches;
+}
+
 export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartProps) {
+  const isMobile = useIsMobile();
+  const isTabletUp = useMediaQuery("(min-width: 768px)");
+  const isDesktopUp = useMediaQuery("(min-width: 1024px)");
+
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
       quadriceps: "Quads",
@@ -151,13 +171,26 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     );
   }, []);
 
+  const chartSizing = useMemo(() => {
+    // Make bars thicker (taller rows) as screen width increases.
+    if (isDesktopUp) {
+      return { rowHeightPx: 54, barSizePx: 18, minHeightPx: 360, paddingPx: 28 };
+    }
+
+    if (isTabletUp && !isMobile) {
+      return { rowHeightPx: 46, barSizePx: 16, minHeightPx: 324, paddingPx: 26 };
+    }
+
+    return { rowHeightPx: 36, barSizePx: 12, minHeightPx: 288, paddingPx: 24 };
+  }, [isDesktopUp, isMobile, isTabletUp]);
+
   const chartHeight = useMemo(() => {
     // Auto-height so all category labels remain visible. Keep a sensible minimum for small datasets.
-    const rowHeightPx = 36;
-    const minHeightPx = 288; // ~h-72
-    const paddingPx = 24;
-    return Math.max(minHeightPx, chartData.length * rowHeightPx + paddingPx);
-  }, [chartData.length]);
+    return Math.max(
+      chartSizing.minHeightPx,
+      chartData.length * chartSizing.rowHeightPx + chartSizing.paddingPx,
+    );
+  }, [chartData.length, chartSizing]);
 
   return (
     <div className="w-full" style={{ height: chartHeight }}>
@@ -184,6 +217,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
             name={chartData[0]?.muscle1Label ?? "Muscle 1"}
             radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
+            barSize={chartSizing.barSizePx}
           >
             {chartData.map((entry, idx) => (
               <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
@@ -194,6 +228,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
             name={chartData[0]?.muscle2Label ?? "Muscle 2"}
             radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
+            barSize={chartSizing.barSizePx}
           >
             {chartData.map((entry, idx) => (
               <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
