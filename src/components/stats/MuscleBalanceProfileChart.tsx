@@ -83,6 +83,12 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     });
   }, [data]);
 
+  const yAxisWidth = useMemo(() => {
+    const maxLen = chartData.reduce((max, d) => Math.max(max, d.name.length), 0);
+    // Rough px-per-character heuristic, clamped to keep the chart usable.
+    return Math.min(320, Math.max(140, Math.round(maxLen * 6.5)));
+  }, [chartData]);
+
   const renderTooltip = useCallback(({ active, payload, label }: TooltipProps<number, string>) => {
     if (!active || !payload || payload.length === 0) return null;
 
@@ -145,19 +151,38 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     );
   }, []);
 
+  const chartHeight = useMemo(() => {
+    // Auto-height so all category labels remain visible. Keep a sensible minimum for small datasets.
+    const rowHeightPx = 36;
+    const minHeightPx = 288; // ~h-72
+    const paddingPx = 24;
+    return Math.max(minHeightPx, chartData.length * rowHeightPx + paddingPx);
+  }, [chartData.length]);
+
   return (
-    <div className="w-full h-72">
+    <div className="w-full" style={{ height: chartHeight }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+        <BarChart layout="vertical" data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="name" className="text-xs" />
-          <YAxis className="text-xs" domain={[0, 140]} tickFormatter={(value) => `${Math.round(value)}%`} />
-          <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+          <XAxis
+            type="number"
+            className="text-xs"
+            domain={[0, 140]}
+            tickFormatter={(value) => `${Math.round(value)}%`}
+          />
+          <YAxis
+            type="category"
+            dataKey="name"
+            className="text-xs"
+            width={yAxisWidth}
+            tickMargin={8}
+          />
+          <ReferenceLine x={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
           <RechartsTooltip content={renderTooltip} />
           <Bar
             dataKey="muscle1Pct"
             name={chartData[0]?.muscle1Label ?? "Muscle 1"}
-            radius={[4, 4, 0, 0]}
+            radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
           >
             {chartData.map((entry, idx) => (
@@ -167,7 +192,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
           <Bar
             dataKey="muscle2Pct"
             name={chartData[0]?.muscle2Label ?? "Muscle 2"}
-            radius={[4, 4, 0, 0]}
+            radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
           >
             {chartData.map((entry, idx) => (
