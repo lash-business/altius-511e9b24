@@ -67,8 +67,12 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
       const v2 = m2?.value as number | undefined;
       const hasBoth = typeof v1 === "number" && typeof v2 === "number";
       const diff = hasBoth ? Math.abs(v1 - v2) : undefined;
+      const m1Label =
+        (m1?.payload as { muscle1Label?: string } | undefined)?.muscle1Label ?? (m1?.name as string | undefined) ?? "Muscle 1";
+      const m2Label =
+        (m2?.payload as { muscle2Label?: string } | undefined)?.muscle2Label ?? (m2?.name as string | undefined) ?? "Muscle 2";
       const weakerSide =
-        hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1?.name ?? "Muscle 1"} weaker` : `${m2?.name ?? "Muscle 2"} weaker`) : "No weaker side";
+        hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1Label} weaker` : `${m2Label} weaker`) : "No weaker side";
       const isHighDiff = typeof diff === "number" && diff > 20;
 
       return (
@@ -81,18 +85,28 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
         >
           <div className="text-xs font-medium text-muted-foreground">{label}</div>
           <div className="mt-1 space-y-1">
-            {payload.map((entry) => (
-              <div key={entry.name} className="flex items-center justify-between gap-2 text-xs">
-                <span className="flex items-center gap-2">
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
-                  />
-                  <span>{entry.name}</span>
-                </span>
-                <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
-              </div>
-            ))}
+            {payload.map((entry, idx) => {
+              const p = entry.payload as { muscle1Label?: string; muscle2Label?: string } | undefined;
+              const entryLabel =
+                entry.dataKey === "muscle1Pct"
+                  ? p?.muscle1Label ?? (entry.name as string | undefined)
+                  : entry.dataKey === "muscle2Pct"
+                    ? p?.muscle2Label ?? (entry.name as string | undefined)
+                    : (entry.name as string | undefined);
+
+              return (
+                <div key={`${String(entry.dataKey)}-${idx}`} className="flex items-center justify-between gap-2 text-xs">
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
+                    />
+                    <span>{entryLabel}</span>
+                  </span>
+                  <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
+                </div>
+              );
+            })}
           </div>
           {typeof diff === "number" && (
             <div
