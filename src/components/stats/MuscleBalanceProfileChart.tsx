@@ -174,14 +174,35 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
   const chartSizing = useMemo(() => {
     // Make bars thicker (taller rows) as screen width increases.
     if (isDesktopUp) {
-      return { rowHeightPx: 54, barSizePx: 18, minHeightPx: 360, paddingPx: 28 };
+      return {
+        rowHeightPx: 72,
+        barSizePx: 28,
+        barGapPx: 10,
+        barCategoryGapPx: 14,
+        minHeightPx: 420,
+        paddingPx: 32,
+      };
     }
 
     if (isTabletUp && !isMobile) {
-      return { rowHeightPx: 46, barSizePx: 16, minHeightPx: 324, paddingPx: 26 };
+      return {
+        rowHeightPx: 58,
+        barSizePx: 22,
+        barGapPx: 8,
+        barCategoryGapPx: 16,
+        minHeightPx: 372,
+        paddingPx: 28,
+      };
     }
 
-    return { rowHeightPx: 36, barSizePx: 12, minHeightPx: 288, paddingPx: 24 };
+    return {
+      rowHeightPx: 40,
+      barSizePx: 14,
+      barGapPx: 6,
+      barCategoryGapPx: 20,
+      minHeightPx: 288,
+      paddingPx: 24,
+    };
   }, [isDesktopUp, isMobile, isTabletUp]);
 
   const chartHeight = useMemo(() => {
@@ -195,7 +216,13 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
   return (
     <div className="w-full" style={{ height: chartHeight }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart layout="vertical" data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+        <BarChart
+          layout="vertical"
+          data={chartData}
+          margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+          barGap={chartSizing.barGapPx}
+          barCategoryGap={chartSizing.barCategoryGapPx}
+        >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis
             type="number"
@@ -218,6 +245,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
             radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
             barSize={chartSizing.barSizePx}
+            maxBarSize={chartSizing.barSizePx}
           >
             {chartData.map((entry, idx) => (
               <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
@@ -229,6 +257,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
             radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
             barSize={chartSizing.barSizePx}
+            maxBarSize={chartSizing.barSizePx}
           >
             {chartData.map((entry, idx) => (
               <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
