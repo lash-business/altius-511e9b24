@@ -386,18 +386,6 @@ export function Stats() {
     return "Stable (no change vs first test)";
   })();
 
-  const radarSummary = (() => {
-    if (!strengthRadarData || strengthRadarData.length === 0) return null;
-
-    const values = strengthRadarData.map((p) => p.normPercentRaw);
-    const avg = Math.round(values.reduce((sum, v) => sum + v, 0) / values.length);
-
-    const lowest = strengthRadarData.reduce((min, p) => (p.normPercentRaw < min.normPercentRaw ? p : min), strengthRadarData[0]);
-    const belowTargetCount = strengthRadarData.filter((p) => p.normPercentRaw < 100).length;
-
-    return { avg, lowest, belowTargetCount, total: strengthRadarData.length };
-  })();
-
   return (
     <div className="container mx-auto px-4 py-8 pb-24 space-y-8">
       {/* Primary focus: Strength Profile */}
@@ -421,37 +409,6 @@ export function Stats() {
         </CardHeader>
         <CardContent className="space-y-4">
           <StrengthProfileChart data={strengthRadarData} />
-
-          {radarSummary && (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border bg-background/60 p-3">
-                <div className="text-xs text-muted-foreground">Average vs target</div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-lg font-semibold tabular-nums">{radarSummary.avg}%</span>
-                  <span className="text-xs text-muted-foreground">avg across {radarSummary.total} spokes</span>
-                </div>
-              </div>
-
-              <div className="rounded-lg border bg-background/60 p-3">
-                <div className="text-xs text-muted-foreground">Lowest area</div>
-                <div className="mt-1 flex items-baseline justify-between gap-3">
-                  <span className="text-sm font-medium">{radarSummary.lowest.axisLabel}</span>
-                  <span className="text-lg font-semibold tabular-nums">{Math.round(radarSummary.lowest.normPercentRaw)}%</span>
-                </div>
-                {radarSummary.lowest.measurementName && (
-                  <div className="mt-1 text-xs text-muted-foreground">{radarSummary.lowest.measurementName}</div>
-                )}
-              </div>
-
-              <div className="rounded-lg border bg-background/60 p-3">
-                <div className="text-xs text-muted-foreground">Below target</div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-lg font-semibold tabular-nums">{radarSummary.belowTargetCount}</span>
-                  <span className="text-xs text-muted-foreground">spokes under 100%</span>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
