@@ -93,12 +93,12 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
 
   return (
     <div className="w-full" style={{ ["--radar-size" as any]: "clamp(320px, 45vw, 680px)" }}>
-      <div className="mx-auto" style={{ width: "min(100%, var(--radar-size))", height: "var(--radar-size)" }}>
+      <div className="w-full" style={{ height: "var(--radar-size)" }}>
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
             data={chartData}
-            margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
-            outerRadius="88%"
+            margin={{ top: 24, bottom: 24, left: 24, right: 24 }}
+            outerRadius="84%"
             // Rotate 22.5° counter-clockwise from the default orientation
             startAngle={90 - 22.5}
             endAngle={-270 - 22.5}
