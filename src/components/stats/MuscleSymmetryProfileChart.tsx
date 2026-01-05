@@ -71,22 +71,35 @@ export function MuscleSymmetryProfileChart({ data }: MuscleSymmetryProfileChartP
   );
 
   return (
-    <div className="w-full h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="name" className="text-xs" />
-          <YAxis
-            className="text-xs"
-            domain={[0, 140]}
-            tickFormatter={(value) => `${Math.round(value)}%`}
-          />
-          <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-          <RechartsTooltip content={renderTooltip} />
-          <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
-          <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="w-full">
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis dataKey="name" className="text-xs" />
+            <YAxis
+              className="text-xs"
+              domain={[0, 140]}
+              tickFormatter={(value) => `${Math.round(value)}%`}
+            />
+            <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+            <RechartsTooltip content={renderTooltip} />
+            <Bar dataKey="leftPct" name="Left" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-left))" />
+            <Bar dataKey="rightPct" name="Right" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-right))" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "hsl(var(--chart-left))" }} />
+          <span>Left</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "hsl(var(--chart-right))" }} />
+          <span>Right</span>
+        </div>
+      </div>
     </div>
   );
 }

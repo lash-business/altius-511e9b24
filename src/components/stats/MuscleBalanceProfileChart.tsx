@@ -213,58 +213,102 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     );
   }, [chartData.length, chartSizing]);
 
+  const legendItems = useMemo(() => {
+    const normalize = (muscleKey: string) =>
+      muscleKey === "quadriceps"
+        ? "quad"
+        : muscleKey === "hamstrings"
+          ? "ham"
+          : muscleKey === "gluteus"
+            ? "glute"
+            : muscleKey === "hip_abductors"
+              ? "abductor"
+              : muscleKey;
+
+    const seen = new Set<string>();
+    const items: Array<{ key: string; label: string; color: string }> = [];
+
+    for (const d of chartData) {
+      for (const rawKey of [d.muscle1Key, d.muscle2Key]) {
+        const key = normalize(rawKey);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push({
+          key,
+          label: getMuscleDisplayName(rawKey),
+          color: getMuscleColor(rawKey),
+        });
+      }
+    }
+
+    return items;
+  }, [chartData]);
+
   return (
-    <div className="w-full" style={{ height: chartHeight }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          layout="vertical"
-          data={chartData}
-          margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
-          barGap={chartSizing.barGapPx}
-          barCategoryGap={chartSizing.barCategoryGapPx}
-        >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis
-            type="number"
-            className="text-xs"
-            domain={[0, 140]}
-            tickFormatter={(value) => `${Math.round(value)}%`}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            className="text-xs"
-            width={yAxisWidth}
-            tickMargin={8}
-          />
-          <ReferenceLine x={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
-          <RechartsTooltip content={renderTooltip} />
-          <Bar
-            dataKey="muscle1Pct"
-            name={chartData[0]?.muscle1Label ?? "Muscle 1"}
-            radius={[0, 4, 4, 0]}
-            fill="hsl(var(--chart-neutral))"
-            barSize={chartSizing.barSizePx}
-            maxBarSize={chartSizing.barSizePx}
+    <div className="w-full">
+      <div style={{ height: chartHeight }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            layout="vertical"
+            data={chartData}
+            margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+            barGap={chartSizing.barGapPx}
+            barCategoryGap={chartSizing.barCategoryGapPx}
           >
-            {chartData.map((entry, idx) => (
-              <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
-            ))}
-          </Bar>
-          <Bar
-            dataKey="muscle2Pct"
-            name={chartData[0]?.muscle2Label ?? "Muscle 2"}
-            radius={[0, 4, 4, 0]}
-            fill="hsl(var(--chart-neutral))"
-            barSize={chartSizing.barSizePx}
-            maxBarSize={chartSizing.barSizePx}
-          >
-            {chartData.map((entry, idx) => (
-              <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis
+              type="number"
+              className="text-xs"
+              domain={[0, 140]}
+              tickFormatter={(value) => `${Math.round(value)}%`}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              className="text-xs"
+              width={yAxisWidth}
+              tickMargin={8}
+            />
+            <ReferenceLine x={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+            <RechartsTooltip content={renderTooltip} />
+            <Bar
+              dataKey="muscle1Pct"
+              name={chartData[0]?.muscle1Label ?? "Muscle 1"}
+              radius={[0, 4, 4, 0]}
+              fill="hsl(var(--chart-neutral))"
+              barSize={chartSizing.barSizePx}
+              maxBarSize={chartSizing.barSizePx}
+            >
+              {chartData.map((entry, idx) => (
+                <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
+              ))}
+            </Bar>
+            <Bar
+              dataKey="muscle2Pct"
+              name={chartData[0]?.muscle2Label ?? "Muscle 2"}
+              radius={[0, 4, 4, 0]}
+              fill="hsl(var(--chart-neutral))"
+              barSize={chartSizing.barSizePx}
+              maxBarSize={chartSizing.barSizePx}
+            >
+              {chartData.map((entry, idx) => (
+                <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {legendItems.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+          {legendItems.map((item) => (
+            <div key={item.key} className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
