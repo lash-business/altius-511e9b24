@@ -57,69 +57,67 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     });
   }, [data]);
 
-  const renderTooltip = useCallback(
-    ({ active, payload, label }: TooltipProps<number, string>) => {
-      if (!active || !payload || payload.length === 0) return null;
+  const renderTooltip = useCallback(({ active, payload, label }: TooltipProps<number, string>) => {
+    if (!active || !payload || payload.length === 0) return null;
 
-      const m1 = payload.find((p) => p.dataKey === "muscle1Pct");
-      const m2 = payload.find((p) => p.dataKey === "muscle2Pct");
-      const v1 = m1?.value as number | undefined;
-      const v2 = m2?.value as number | undefined;
-      const hasBoth = typeof v1 === "number" && typeof v2 === "number";
-      const diff = hasBoth ? Math.abs(v1 - v2) : undefined;
-      const m1Label =
-        (m1?.payload as { muscle1Label?: string } | undefined)?.muscle1Label ?? (m1?.name as string | undefined) ?? "Muscle 1";
-      const m2Label =
-        (m2?.payload as { muscle2Label?: string } | undefined)?.muscle2Label ?? (m2?.name as string | undefined) ?? "Muscle 2";
-      const weakerSide =
-        hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1Label} weaker` : `${m2Label} weaker`) : "No weaker side";
-      const isHighDiff = typeof diff === "number" && diff > 20;
+    const m1 = payload.find((p) => p.dataKey === "muscle1Pct");
+    const m2 = payload.find((p) => p.dataKey === "muscle2Pct");
+    const v1 = m1?.value as number | undefined;
+    const v2 = m2?.value as number | undefined;
+    const hasBoth = typeof v1 === "number" && typeof v2 === "number";
+    const diff = hasBoth ? Math.abs(v1 - v2) : undefined;
+    const m1Label =
+      (m1?.payload as { muscle1Label?: string } | undefined)?.muscle1Label ??
+      (m1?.name as string | undefined) ??
+      "Muscle 1";
+    const m2Label =
+      (m2?.payload as { muscle2Label?: string } | undefined)?.muscle2Label ??
+      (m2?.name as string | undefined) ??
+      "Muscle 2";
+    const weakerSide = hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1Label} weaker` : `${m2Label} weaker`) : "No weaker side";
+    const isHighDiff = typeof diff === "number" && diff > 20;
 
-      return (
-        <div
-          className="rounded-md border px-3 py-2 shadow-sm"
-          style={{
-            backgroundColor: "hsl(var(--card))",
-            borderColor: "hsl(var(--border))",
-          }}
-        >
-          <div className="text-xs font-medium text-muted-foreground">{label}</div>
-          <div className="mt-1 space-y-1">
-            {payload.map((entry, idx) => {
-              const p = entry.payload as { muscle1Label?: string; muscle2Label?: string } | undefined;
-              const entryLabel =
-                entry.dataKey === "muscle1Pct"
-                  ? p?.muscle1Label ?? (entry.name as string | undefined)
-                  : entry.dataKey === "muscle2Pct"
-                    ? p?.muscle2Label ?? (entry.name as string | undefined)
-                    : (entry.name as string | undefined);
+    return (
+      <div
+        className="rounded-md border px-3 py-2 shadow-sm"
+        style={{
+          backgroundColor: "hsl(var(--card))",
+          borderColor: "hsl(var(--border))",
+        }}
+      >
+        <div className="text-xs font-medium text-muted-foreground">{label}</div>
+        <div className="mt-1 space-y-1">
+          {payload.map((entry, idx) => {
+            const p = entry.payload as { muscle1Label?: string; muscle2Label?: string } | undefined;
+            const entryLabel =
+              entry.dataKey === "muscle1Pct"
+                ? (p?.muscle1Label ?? (entry.name as string | undefined))
+                : entry.dataKey === "muscle2Pct"
+                  ? (p?.muscle2Label ?? (entry.name as string | undefined))
+                  : (entry.name as string | undefined);
 
-              return (
-                <div key={`${String(entry.dataKey)}-${idx}`} className="flex items-center justify-between gap-2 text-xs">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
-                    />
-                    <span>{entryLabel}</span>
-                  </span>
-                  <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
-                </div>
-              );
-            })}
-          </div>
-          {typeof diff === "number" && (
-            <div
-              className={`mt-2 text-xs ${isHighDiff ? "font-semibold text-destructive" : "text-muted-foreground"}`}
-            >
-              {`Difference: ${diff.toFixed(0)}% · ${weakerSide}`}
-            </div>
-          )}
+            return (
+              <div key={`${String(entry.dataKey)}-${idx}`} className="flex items-center justify-between gap-2 text-xs">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: entry.color ?? "hsl(var(--foreground))" }}
+                  />
+                  <span>{entryLabel}</span>
+                </span>
+                <span className="font-medium">{`${(entry.value as number).toFixed(0)}%`}</span>
+              </div>
+            );
+          })}
         </div>
-      );
-    },
-    []
-  );
+        {typeof diff === "number" && (
+          <div className={`mt-2 text-xs ${isHighDiff ? "font-semibold text-destructive" : "text-muted-foreground"}`}>
+            {`Difference: ${diff.toFixed(0)}% · ${weakerSide}`}
+          </div>
+        )}
+      </div>
+    );
+  }, []);
 
   return (
     <div className="w-full h-72">
