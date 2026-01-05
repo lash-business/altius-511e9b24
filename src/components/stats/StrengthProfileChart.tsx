@@ -178,6 +178,20 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
           </RadarChart>
         </ResponsiveContainer>
       </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span
+            className="h-0.5 w-5 border-t-2 border-dashed"
+            style={{ borderTopColor: "hsl(var(--accent))" }}
+          />
+          <span>Target (100%)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "hsl(var(--primary))" }} />
+          <span>Your score</span>
+        </div>
+      </div>
     </div>
   );
 }
