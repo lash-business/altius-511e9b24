@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -27,6 +27,24 @@ interface MuscleBalanceProfileChartProps {
   data: BalanceData[];
 }
 
+type PairPayload = {
+  pairLabel: string;
+  muscle1Key: string;
+  muscle2Key: string;
+  muscle1Label: string;
+  muscle2Label: string;
+  muscle1Pct: number;
+  muscle2Pct: number;
+};
+
+type ChartRow = {
+  name: string; // Y-axis label (e.g., "Left Quad")
+  groupId: string; // used to highlight the pair (2 bars) together
+  barMuscleKey: string; // which muscle this bar represents
+  pct: number; // bar value
+  pair: PairPayload; // original pair, preserved for tooltip
+};
+
 export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartProps) {
   const getMuscleDisplayName = (name: string) => {
     const names: Record<string, string> = {
@@ -38,18 +56,39 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     return names[name] || name;
   };
 
-  const getMuscleColor = (muscleKey: string) => {
+  const normalizeMuscleKey = (muscleKey: string) => {
     // Normalize common keys coming from `v_balance`.
-    const normalized =
-      muscleKey === "quadriceps"
-        ? "quad"
-        : muscleKey === "hamstrings"
-          ? "ham"
-          : muscleKey === "gluteus"
-            ? "glute"
-            : muscleKey === "hip_abductors"
-              ? "abductor"
-              : muscleKey;
+    return muscleKey === "quadriceps"
+      ? "quad"
+      : muscleKey === "hamstrings"
+        ? "ham"
+        : muscleKey === "gluteus"
+          ? "glute"
+          : muscleKey === "hip_abductors"
+            ? "abductor"
+            : muscleKey;
+  };
+
+  const getMuscleShortLabel = (name: string) => {
+    const normalized = normalizeMuscleKey(name);
+    const labels: Record<string, string> = {
+      quad: "Quad",
+      ham: "Ham",
+      glute: "Glute",
+      abductor: "Abductor",
+    };
+    return labels[normalized] ?? name;
+  };
+
+  const toTitleCaseWords = (value: string) =>
+    value
+      .split(/\s+/g)
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+
+  const getMuscleColor = (muscleKey: string) => {
+    const normalized = normalizeMuscleKey(muscleKey);
 
     const colors: Record<string, string> = {
       quad: "hsl(var(--chart-quad))",
@@ -67,19 +106,62 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     return side;
   };
 
-  const chartData = useMemo(() => {
-    return data.map((item) => {
-      const m1Label = getMuscleDisplayName(item.muscle1);
-      const m2Label = getMuscleDisplayName(item.muscle2);
-      return {
-        name: `${m1Label} vs ${m2Label} (${getSideLabel(item.left_right)})`,
+  const chartData: ChartRow[] = useMemo(() => {
+    const sideOrder: Record<string, number> = { Left: 0, Right: 1 };
+    const muscleOrder: Record<string, number> = { Quad: 0, Ham: 1, Glute: 2, Abductor: 3 };
+
+    const rows: ChartRow[] = [];
+
+    for (const item of data) {
+      const sideLabel = getSideLabel(item.left_right);
+      const m1Display = getMuscleDisplayName(item.muscle1);
+      const m2Display = getMuscleDisplayName(item.muscle2);
+      const muscle1Pct = (item.norm_percent1 ?? 0) * 100;
+      const muscle2Pct = (item.norm_percent2 ?? 0) * 100;
+
+      const pairLabel = `${m1Display} vs ${m2Display} (${sideLabel})`;
+      const groupId = `${item.left_right}:${normalizeMuscleKey(item.muscle1)}:${normalizeMuscleKey(item.muscle2)}`;
+
+      const pair: PairPayload = {
+        pairLabel,
         muscle1Key: item.muscle1,
         muscle2Key: item.muscle2,
-        muscle1Label: m1Label,
-        muscle2Label: m2Label,
-        muscle1Pct: (item.norm_percent1 ?? 0) * 100,
-        muscle2Pct: (item.norm_percent2 ?? 0) * 100,
+        muscle1Label: m1Display,
+        muscle2Label: m2Display,
+        muscle1Pct,
+        muscle2Pct,
       };
+
+      const m1Short = getMuscleShortLabel(item.muscle1);
+      const m2Short = getMuscleShortLabel(item.muscle2);
+
+      rows.push({
+        name: toTitleCaseWords(`${sideLabel} ${m1Short}`),
+        groupId,
+        barMuscleKey: item.muscle1,
+        pct: muscle1Pct,
+        pair,
+      });
+
+      rows.push({
+        name: toTitleCaseWords(`${sideLabel} ${m2Short}`),
+        groupId,
+        barMuscleKey: item.muscle2,
+        pct: muscle2Pct,
+        pair,
+      });
+    }
+
+    return rows.sort((a, b) => {
+      const aSide = a.name.split(" ")[0] ?? "";
+      const bSide = b.name.split(" ")[0] ?? "";
+      const aMuscle = a.name.split(" ").slice(1).join(" ");
+      const bMuscle = b.name.split(" ").slice(1).join(" ");
+      const sideCmp = (sideOrder[aSide] ?? 99) - (sideOrder[bSide] ?? 99);
+      if (sideCmp !== 0) return sideCmp;
+      const muscleCmp = (muscleOrder[aMuscle] ?? 99) - (muscleOrder[bMuscle] ?? 99);
+      if (muscleCmp !== 0) return muscleCmp;
+      return a.name.localeCompare(b.name);
     });
   }, [data]);
 
@@ -89,25 +171,38 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     return Math.min(320, Math.max(140, Math.round(maxLen * 6.5)));
   }, [chartData]);
 
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+
   const renderTooltip = useCallback(({ active, payload, label }: TooltipProps<number, string>) => {
     if (!active || !payload || payload.length === 0) return null;
 
-    const m1 = payload.find((p) => p.dataKey === "muscle1Pct");
-    const m2 = payload.find((p) => p.dataKey === "muscle2Pct");
-    const v1 = m1?.value as number | undefined;
-    const v2 = m2?.value as number | undefined;
-    const hasBoth = typeof v1 === "number" && typeof v2 === "number";
-    const diff = hasBoth ? Math.abs(v1 - v2) : undefined;
-    const m1Label =
-      (m1?.payload as { muscle1Label?: string } | undefined)?.muscle1Label ??
-      (m1?.name as string | undefined) ??
-      "Muscle 1";
-    const m2Label =
-      (m2?.payload as { muscle2Label?: string } | undefined)?.muscle2Label ??
-      (m2?.name as string | undefined) ??
-      "Muscle 2";
-    const weakerSide = hasBoth && v1 !== v2 ? (v1 < v2 ? `${m1Label} weaker` : `${m2Label} weaker`) : "No weaker side";
+    const row = payload[0]?.payload as ChartRow | undefined;
+    const pair = row?.pair;
+    if (!pair) return null;
+
+    const v1 = pair.muscle1Pct;
+    const v2 = pair.muscle2Pct;
+    const diff = Math.abs(v1 - v2);
+    const weakerSide =
+      v1 !== v2 ? (v1 < v2 ? `${pair.muscle1Label} weaker` : `${pair.muscle2Label} weaker`) : "No weaker side";
     const isHighDiff = typeof diff === "number" && diff > 20;
+
+    const tooltipPayload = [
+      {
+        dataKey: "muscle1Pct",
+        value: v1,
+        name: pair.muscle1Label,
+        color: getMuscleColor(pair.muscle1Key),
+        payload: { muscle1Label: pair.muscle1Label, muscle2Label: pair.muscle2Label },
+      },
+      {
+        dataKey: "muscle2Pct",
+        value: v2,
+        name: pair.muscle2Label,
+        color: getMuscleColor(pair.muscle2Key),
+        payload: { muscle1Label: pair.muscle1Label, muscle2Label: pair.muscle2Label },
+      },
+    ];
 
     return (
       <div
@@ -117,9 +212,9 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
           borderColor: "hsl(var(--border))",
         }}
       >
-        <div className="text-xs font-medium text-muted-foreground">{label}</div>
+        <div className="text-xs font-medium text-muted-foreground">{pair.pairLabel ?? label}</div>
         <div className="mt-1 space-y-1">
-          {payload.map((entry, idx) => {
+          {tooltipPayload.map((entry, idx) => {
             const p = entry.payload as { muscle1Label?: string; muscle2Label?: string } | undefined;
             const entryLabel =
               entry.dataKey === "muscle1Pct"
@@ -149,7 +244,7 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
         )}
       </div>
     );
-  }, []);
+  }, [getMuscleColor]);
 
   const chartHeight = useMemo(() => {
     // Auto-height so all category labels remain visible. Keep a sensible minimum for small datasets.
@@ -162,7 +257,16 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
   return (
     <div className="w-full" style={{ height: chartHeight }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart layout="vertical" data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
+        <BarChart
+          layout="vertical"
+          data={chartData}
+          margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+          onMouseMove={(e) => {
+            const groupId = (e as any)?.activePayload?.[0]?.payload?.groupId as string | undefined;
+            if (groupId) setActiveGroupId(groupId);
+          }}
+          onMouseLeave={() => setActiveGroupId(null)}
+        >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
           <XAxis
             type="number"
@@ -180,23 +284,17 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
           <ReferenceLine x={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
           <RechartsTooltip content={renderTooltip} />
           <Bar
-            dataKey="muscle1Pct"
-            name={chartData[0]?.muscle1Label ?? "Muscle 1"}
+            dataKey="pct"
+            name="Percent"
             radius={[0, 4, 4, 0]}
             fill="hsl(var(--chart-neutral))"
           >
             {chartData.map((entry, idx) => (
-              <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
-            ))}
-          </Bar>
-          <Bar
-            dataKey="muscle2Pct"
-            name={chartData[0]?.muscle2Label ?? "Muscle 2"}
-            radius={[0, 4, 4, 0]}
-            fill="hsl(var(--chart-neutral))"
-          >
-            {chartData.map((entry, idx) => (
-              <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
+              <Cell
+                key={`pct-${idx}`}
+                fill={getMuscleColor(entry.barMuscleKey)}
+                fillOpacity={activeGroupId ? (entry.groupId === activeGroupId ? 1 : 0.25) : 1}
+              />
             ))}
           </Bar>
         </BarChart>
