@@ -45,6 +45,11 @@
     --chart-left: 215 85% 35%; /* mirrors primary */
     --chart-right: 185 75% 45%; /* mirrors secondary */
     --chart-neutral: 215 15% 45%; /* neutral axis/labels if needed */
+    /* Muscle-specific chart colors (avoid the default blue/teal pair) */
+    --chart-quad: 28 90% 52%; /* warm orange */
+    --chart-ham: 268 75% 58%; /* violet */
+    --chart-glute: 155 70% 40%; /* green */
+    --chart-abductor: 330 75% 56%; /* magenta (fallback for hip abductors) */
 
     --radius: 0.5rem;
 
@@ -88,6 +93,11 @@
     --chart-left: 215 85% 60%; /* brighter blue for dark cards */
     --chart-right: 185 80% 60%; /* brighter teal/green for dark cards */
     --chart-neutral: 215 15% 70%;
+    /* Muscle-specific chart colors (dark mode tuning for contrast) */
+    --chart-quad: 28 95% 60%;
+    --chart-ham: 268 85% 72%;
+    --chart-glute: 155 75% 52%;
+    --chart-abductor: 330 85% 68%;
   }
 }
 

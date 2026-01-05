@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -37,6 +38,29 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
     return names[name] || name;
   };
 
+  const getMuscleColor = (muscleKey: string) => {
+    // Normalize common keys coming from `v_balance`.
+    const normalized =
+      muscleKey === "quadriceps"
+        ? "quad"
+        : muscleKey === "hamstrings"
+          ? "ham"
+          : muscleKey === "gluteus"
+            ? "glute"
+            : muscleKey === "hip_abductors"
+              ? "abductor"
+              : muscleKey;
+
+    const colors: Record<string, string> = {
+      quad: "hsl(var(--chart-quad))",
+      ham: "hsl(var(--chart-ham))",
+      glute: "hsl(var(--chart-glute))",
+      abductor: "hsl(var(--chart-abductor))",
+    };
+
+    return colors[normalized] ?? "hsl(var(--chart-neutral))";
+  };
+
   const getSideLabel = (side: string) => {
     if (side === "left") return "Left";
     if (side === "right") return "Right";
@@ -49,6 +73,8 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
       const m2Label = getMuscleDisplayName(item.muscle2);
       return {
         name: `${m1Label} vs ${m2Label} (${getSideLabel(item.left_right)})`,
+        muscle1Key: item.muscle1,
+        muscle2Key: item.muscle2,
         muscle1Label: m1Label,
         muscle2Label: m2Label,
         muscle1Pct: (item.norm_percent1 ?? 0) * 100,
@@ -132,14 +158,22 @@ export function MuscleBalanceProfileChart({ data }: MuscleBalanceProfileChartPro
             dataKey="muscle1Pct"
             name={chartData[0]?.muscle1Label ?? "Muscle 1"}
             radius={[4, 4, 0, 0]}
-            fill="hsl(var(--chart-left))"
-          />
+            fill="hsl(var(--chart-neutral))"
+          >
+            {chartData.map((entry, idx) => (
+              <Cell key={`m1-${idx}`} fill={getMuscleColor(entry.muscle1Key)} />
+            ))}
+          </Bar>
           <Bar
             dataKey="muscle2Pct"
             name={chartData[0]?.muscle2Label ?? "Muscle 2"}
             radius={[4, 4, 0, 0]}
-            fill="hsl(var(--chart-right))"
-          />
+            fill="hsl(var(--chart-neutral))"
+          >
+            {chartData.map((entry, idx) => (
+              <Cell key={`m2-${idx}`} fill={getMuscleColor(entry.muscle2Key)} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
