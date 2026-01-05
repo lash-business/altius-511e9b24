@@ -32,22 +32,12 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
     displayValue: Math.min(125, point.value),
   }));
 
-  const renderTargetLabel = (props: any) => {
-    const { x, y, value } = props;
-    if (value == null || Number.isNaN(value)) return null;
-    return (
-      <text x={x} y={y} dy={-2} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize={10}>
-        {Math.round(value)}
-      </text>
-    );
-  };
-
-  const renderRawLabel = (props: any) => {
+  const renderNormPercentLabel = (props: any) => {
     const { x, y, value } = props;
     if (value == null || Number.isNaN(value)) return null;
     return (
       <text x={x} y={y} dy={-2} textAnchor="middle" fill="hsl(var(--foreground))" fontSize={10}>
-        {Math.round(value)}
+        {`${Math.round(value)}%`}
       </text>
     );
   };
@@ -170,7 +160,6 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
               shape={smoothRadarShape}
               isAnimationActive={false}
             >
-              <LabelList dataKey="normTarget" position="top" offset={2} content={renderTargetLabel} />
             </Radar>
 
             <Radar
@@ -182,7 +171,7 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
               shape={smoothRadarShape}
               isAnimationActive={false}
             >
-              <LabelList dataKey="rawValue" position="top" offset={2} content={renderRawLabel} />
+              <LabelList dataKey="normPercentRaw" position="top" offset={2} content={renderNormPercentLabel} />
             </Radar>
           </RadarChart>
         </ResponsiveContainer>
