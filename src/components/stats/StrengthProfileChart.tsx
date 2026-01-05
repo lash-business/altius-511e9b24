@@ -97,8 +97,10 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
             data={chartData}
-            margin={{ top: 24, bottom: 24, left: 24, right: 24 }}
-            outerRadius="84%"
+            // Keep top/bottom tight like before; add breathing room only on the sides for labels.
+            margin={{ top: 4, bottom: 4, left: 24, right: 24 }}
+            // Restore original radar size.
+            outerRadius="88%"
             // Rotate 22.5° counter-clockwise from the default orientation
             startAngle={90 - 22.5}
             endAngle={-270 - 22.5}
