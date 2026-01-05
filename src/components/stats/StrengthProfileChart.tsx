@@ -107,7 +107,8 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart
             data={chartData}
-            margin={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
+            outerRadius="88%"
             // Rotate 22.5° counter-clockwise from the default orientation
             startAngle={90 - 22.5}
             endAngle={-270 - 22.5}
@@ -169,7 +170,7 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
               shape={smoothRadarShape}
               isAnimationActive={false}
             >
-              <LabelList dataKey="normTarget" position="top" offset={6} content={renderTargetLabel} />
+              <LabelList dataKey="normTarget" position="top" offset={2} content={renderTargetLabel} />
             </Radar>
 
             <Radar
@@ -181,7 +182,7 @@ export function StrengthProfileChart({ data }: StrengthProfileChartProps) {
               shape={smoothRadarShape}
               isAnimationActive={false}
             >
-              <LabelList dataKey="rawValue" position="top" offset={6} content={renderRawLabel} />
+              <LabelList dataKey="rawValue" position="top" offset={2} content={renderRawLabel} />
             </Radar>
           </RadarChart>
         </ResponsiveContainer>
