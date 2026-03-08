@@ -64,19 +64,19 @@ export function StrengthProgressChart({ data }: StrengthProgressChartProps) {
             content={({ active, payload, label }) => {
               if (!active || !payload || payload.length === 0) return null;
               const point = payload[0].payload as StrengthProgressPoint;
+              const entries = payload.filter((e) => e.value != null);
 
               return (
-                <div className="rounded-md border bg-card px-3 py-2 text-xs shadow-sm max-h-72 overflow-y-auto">
-                  <div className="font-semibold mb-2">Test date: {label}</div>
-                  <div className="space-y-2">
-                    {payload.map((entry) => {
-                      if (entry.value == null) return null;
+                <div className="rounded-md border bg-card px-3 py-2 text-xs shadow-sm">
+                  <div className="font-semibold mb-1.5">Test date: {label}</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    {entries.map((entry) => {
                       const name = entry.dataKey as string;
                       const raw = point[`${name}:raw`] as number | null;
                       const target = point[`${name}:target`] as number | null;
 
                       return (
-                        <div key={name} className="space-y-0.5">
+                        <div key={name}>
                           <div className="flex items-center gap-1.5">
                             <span
                               className="inline-block h-2 w-2 rounded-full shrink-0"
@@ -84,19 +84,13 @@ export function StrengthProgressChart({ data }: StrengthProgressChartProps) {
                             />
                             <span className="font-medium">{name}</span>
                           </div>
-                          <div className="pl-3.5 space-y-0.5 text-muted-foreground">
-                            <div>
-                              Norm: <span className="text-foreground font-medium">{Math.round(entry.value as number)}%</span>
-                            </div>
+                          <div className="pl-3.5 text-muted-foreground">
+                            <span className="text-foreground font-medium">{Math.round(entry.value as number)}%</span>
                             {raw != null && (
-                              <div>
-                                Raw: <span className="text-foreground font-medium">{raw.toFixed(1)}</span>
-                              </div>
+                              <span> · Raw {raw.toFixed(1)}</span>
                             )}
                             {target != null && (
-                              <div>
-                                Target: <span className="text-foreground font-medium">{target.toFixed(1)}</span>
-                              </div>
+                              <span> · Target {target.toFixed(1)}</span>
                             )}
                           </div>
                         </div>
