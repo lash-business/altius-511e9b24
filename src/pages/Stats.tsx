@@ -9,6 +9,7 @@ import { MuscleBalanceProfileChart } from "@/components/stats/MuscleBalanceProfi
 import { RecentTestsChart } from "@/components/stats/RecentTestsChart";
 import { StrengthProfileChart } from "@/components/stats/StrengthProfileChart";
 import { MuscleSymmetryProfileChart } from "@/components/stats/MuscleSymmetryProfileChart";
+import { StrengthProgressChart, StrengthProgressPoint } from "@/components/stats/StrengthProgressChart";
 
 interface StrengthData {
   muscle_group: string;
@@ -66,11 +67,13 @@ export function Stats() {
   const [latestTestId, setLatestTestId] = useState<string | null>(null);
   const [latestTestDate, setLatestTestDate] = useState<string | null>(null);
   const [trendData, setTrendData] = useState<TrendPoint[]>([]);
+  const [strengthProgressData, setStrengthProgressData] = useState<StrengthProgressPoint[]>([]);
 
   useEffect(() => {
     if (!user) return;
     fetchLatestTestData(user.id);
     fetchTrendData(user.id);
+    fetchStrengthProgress(user.id);
   }, [user]);
 
   const fetchLatestTestData = async (userId: string) => {
@@ -166,6 +169,71 @@ export function Stats() {
       setTrendData(points);
     } catch (error) {
       console.error("Error fetching trend data:", error);
+    }
+  };
+
+  const fetchStrengthProgress = async (userId: string) => {
+    try {
+      const { data: tests, error } = await supabase
+        .from("tests")
+        .select("id, test_date")
+        .eq("user_id", userId)
+        .order("test_date", { ascending: true });
+
+      if (error || !tests || tests.length === 0) return;
+
+      const typedTests = tests as { id: string; test_date: string }[];
+      const points: StrengthProgressPoint[] = [];
+
+      for (const test of typedTests) {
+        const { data: strength, error: strengthError } = await supabase
+          .from("v_strength" as any)
+          .select("*")
+          .eq("test_id", test.id);
+
+        if (strengthError || !strength) continue;
+
+        const rows = (strength as unknown as StrengthData[]).filter(
+          (row) => row.left_right === "left" || row.left_right === "right",
+        );
+        if (rows.length === 0) continue;
+
+        const point: StrengthProgressPoint = {
+          date: test.test_date,
+          label: new Date(test.test_date).toLocaleDateString(),
+          "Left Quad": null,
+          "Right Quad": null,
+          "Left Ham": null,
+          "Right Ham": null,
+          "Left Glute": null,
+          "Right Glute": null,
+          "Left Abductor": null,
+          "Right Abductor": null,
+        };
+
+        const muscleNames: Record<string, string> = {
+          quad: "Quad",
+          ham: "Ham",
+          glute: "Glute",
+          abductor: "Abductor",
+        };
+
+        for (const row of rows) {
+          const side = row.left_right === "left" ? "Left" : "Right";
+          const muscle = muscleNames[row.muscle_group];
+          if (!muscle) continue;
+          const key = `${side} ${muscle}` as keyof StrengthProgressPoint;
+          if (key in point) {
+            (point as any)[key] = Math.round((row.norm_percent || 0) * 100);
+          }
+        }
+
+        points.push(point);
+      }
+
+      setStrengthProgressData(points);
+    } catch (error) {
+      console.error("Error fetching strength progress:", error);
     }
   };
 
@@ -508,6 +576,20 @@ export function Stats() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+      {/* Strength progress over time */}
+      {strengthProgressData.length > 1 && (
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Strength Progress Over Time</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Track how each muscle group on each side has changed across all of your tests.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <StrengthProgressChart data={strengthProgressData} />
           </CardContent>
         </Card>
       )}
