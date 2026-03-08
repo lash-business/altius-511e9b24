@@ -6,6 +6,8 @@ import { toast } from "@/hooks/use-toast";
 import { strengthTestSchema } from "@/lib/validations/health";
 import { z } from "zod";
 import { TestDateStep } from "@/components/onboarding/TestDateStep";
+import { HeightStep } from "@/components/onboarding/HeightStep";
+import { WeightStep } from "@/components/onboarding/WeightStep";
 import { QuadricepsStep } from "@/components/onboarding/QuadricepsStep";
 import { HamstringsStep } from "@/components/onboarding/HamstringsStep";
 import { GlutesStep } from "@/components/onboarding/GlutesStep";
@@ -14,6 +16,9 @@ import { format as formatDate } from "date-fns";
 
 interface TestFlowData {
   testDate: Date | undefined;
+  heightFeet: string;
+  heightInches: string;
+  weight: string;
   leftQuad: string;
   rightQuad: string;
   leftHamstring: string;
@@ -35,6 +40,9 @@ export function Test() {
   const [data, setData] = useState<TestFlowData>({
     // Default to today so the user doesn't have to "re-select" today's date.
     testDate: new Date(),
+    heightFeet: "",
+    heightInches: "",
+    weight: "",
     leftQuad: "",
     rightQuad: "",
     leftHamstring: "",
@@ -50,7 +58,7 @@ export function Test() {
       if (!user) return;
       const { data: userRow, error } = await supabase
         .from("users")
-        .select("birth_date, gender")
+        .select("birth_date, gender, height_value_in, weight_value_lb")
         .eq("id", user.id)
         .single();
       if (!error && userRow) {
@@ -58,6 +66,9 @@ export function Test() {
           ...prev,
           birthDate: userRow.birth_date ? new Date(userRow.birth_date) : undefined,
           gender: userRow.gender as "male" | "female" | undefined,
+          heightFeet: userRow.height_value_in ? Math.floor(userRow.height_value_in / 12).toString() : "",
+          heightInches: userRow.height_value_in ? (userRow.height_value_in % 12).toString() : "",
+          weight: userRow.weight_value_lb?.toString() || "",
         }));
       }
     };
@@ -68,7 +79,7 @@ export function Test() {
     setData((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleNext = () => setCurrentStep((s) => Math.min(s + 1, 4));
+  const handleNext = () => setCurrentStep((s) => Math.min(s + 1, 6));
   const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   const findNormRatioId = async (
@@ -105,6 +116,22 @@ export function Test() {
         return;
       }
 
+      const heightFeet = parseInt(data.heightFeet);
+      const heightInches = parseInt(data.heightInches);
+      const weightLb = parseInt(data.weight);
+      if (isNaN(heightFeet) || heightFeet < 0 || heightFeet > 8 ||
+          isNaN(heightInches) || heightInches < 0 || heightInches > 11 ||
+          isNaN(weightLb) || weightLb < 50 || weightLb > 700) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter valid height and weight values.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      const totalHeightInches = heightFeet * 12 + heightInches;
+
       const measurementValidation = strengthTestSchema.safeParse(data);
       if (!measurementValidation.success) {
         const firstError = measurementValidation.error.errors[0];
@@ -131,12 +158,23 @@ export function Test() {
 
       const age = Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 
+      const { error: userError } = await supabase
+        .from("users")
+        .update({
+          height_value_in: totalHeightInches,
+          weight_value_lb: weightLb,
+        })
+        .eq("id", user.id);
+      if (userError) throw userError;
+
       const { data: testRow, error: testError } = await supabase
         .from("tests")
         .insert({
           user_id: user.id,
           // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
           test_date: formatDate(data.testDate, "yyyy-MM-dd"),
+          recorded_height_value_in: totalHeightInches,
+          recorded_weight_value_lb: weightLb,
         })
         .select()
         .single();
@@ -186,11 +224,13 @@ export function Test() {
   };
 
   const steps = [
-    <TestDateStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 1 of 5" />,
-    <QuadricepsStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 2 of 5" />,
-    <HamstringsStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 3 of 5" />,
-    <GlutesStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 4 of 5" />,
-    <AbductorsStep data={data as any} updateData={updateData as any} onFinish={handleFinish} onBack={handleBack} isSubmitting={isSubmitting} stepLabel="Step 5 of 5" />,
+    <TestDateStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 1 of 7" />,
+    <HeightStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 2 of 7" />,
+    <WeightStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 3 of 7" />,
+    <QuadricepsStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 4 of 7" />,
+    <HamstringsStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 5 of 7" />,
+    <GlutesStep data={data as any} updateData={updateData as any} onNext={handleNext} onBack={handleBack} stepLabel="Step 6 of 7" />,
+    <AbductorsStep data={data as any} updateData={updateData as any} onFinish={handleFinish} onBack={handleBack} isSubmitting={isSubmitting} stepLabel="Step 7 of 7" />,
   ];
 
   return (

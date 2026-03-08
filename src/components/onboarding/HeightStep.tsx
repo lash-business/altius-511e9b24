@@ -9,9 +9,10 @@ interface HeightStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function HeightStep({ data, updateData, onNext, onBack }: HeightStepProps) {
+export function HeightStep({ data, updateData, onNext, onBack, stepLabel }: HeightStepProps) {
   const isValid = data.heightFeet && data.heightInches && 
     parseInt(data.heightFeet) >= 0 && 
     parseInt(data.heightInches) >= 0 && 
@@ -67,7 +68,7 @@ export function HeightStep({ data, updateData, onNext, onBack }: HeightStepProps
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 2 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 2 of 9"}</p>
       </CardContent>
     </Card>
   );

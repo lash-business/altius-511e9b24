@@ -9,9 +9,10 @@ interface WeightStepProps {
   updateData: (updates: Partial<OnboardingData>) => void;
   onNext: () => void;
   onBack: () => void;
+  stepLabel?: string;
 }
 
-export function WeightStep({ data, updateData, onNext, onBack }: WeightStepProps) {
+export function WeightStep({ data, updateData, onNext, onBack, stepLabel }: WeightStepProps) {
   const isValid = data.weight && parseInt(data.weight) > 0;
 
   return (
@@ -49,7 +50,7 @@ export function WeightStep({ data, updateData, onNext, onBack }: WeightStepProps
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">Step 3 of 9</p>
+        <p className="text-center text-sm text-muted-foreground">{stepLabel ?? "Step 3 of 9"}</p>
       </CardContent>
     </Card>
   );
