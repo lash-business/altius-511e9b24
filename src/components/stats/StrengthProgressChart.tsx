@@ -21,6 +21,7 @@ export interface StrengthProgressPoint {
   "Right Glute": number | null;
   "Left Abductor": number | null;
   "Right Abductor": number | null;
+  [key: string]: string | number | null;
 }
 
 interface StrengthProgressChartProps {
@@ -28,7 +29,7 @@ interface StrengthProgressChartProps {
 }
 
 const SERIES: {
-  key: keyof Omit<StrengthProgressPoint, "date" | "label">;
+  key: string;
   color: string;
   dashed: boolean;
 }[] = [
@@ -60,12 +61,50 @@ export function StrengthProgressChart({ data }: StrengthProgressChartProps) {
             strokeDasharray="4 4"
           />
           <Tooltip
-            formatter={(value: any, name: string) => [`${Math.round(value)}%`, name]}
-            labelFormatter={(label) => `Test date: ${label}`}
-            contentStyle={{
-              backgroundColor: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: "var(--radius)",
+            content={({ active, payload, label }) => {
+              if (!active || !payload || payload.length === 0) return null;
+              const point = payload[0].payload as StrengthProgressPoint;
+
+              return (
+                <div className="rounded-md border bg-card px-3 py-2 text-xs shadow-sm max-h-72 overflow-y-auto">
+                  <div className="font-semibold mb-2">Test date: {label}</div>
+                  <div className="space-y-2">
+                    {payload.map((entry) => {
+                      if (entry.value == null) return null;
+                      const name = entry.dataKey as string;
+                      const raw = point[`${name}:raw`] as number | null;
+                      const target = point[`${name}:target`] as number | null;
+
+                      return (
+                        <div key={name} className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className="inline-block h-2 w-2 rounded-full shrink-0"
+                              style={{ backgroundColor: entry.color }}
+                            />
+                            <span className="font-medium">{name}</span>
+                          </div>
+                          <div className="pl-3.5 space-y-0.5 text-muted-foreground">
+                            <div>
+                              Norm: <span className="text-foreground font-medium">{Math.round(entry.value as number)}%</span>
+                            </div>
+                            {raw != null && (
+                              <div>
+                                Raw: <span className="text-foreground font-medium">{raw.toFixed(1)}</span>
+                              </div>
+                            )}
+                            {target != null && (
+                              <div>
+                                Target: <span className="text-foreground font-medium">{target.toFixed(1)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
             }}
           />
           <Legend

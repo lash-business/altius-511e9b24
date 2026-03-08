@@ -222,9 +222,11 @@ export function Stats() {
           const side = row.left_right === "left" ? "Left" : "Right";
           const muscle = muscleNames[row.muscle_group];
           if (!muscle) continue;
-          const key = `${side} ${muscle}` as keyof StrengthProgressPoint;
+          const key = `${side} ${muscle}`;
           if (key in point) {
             (point as any)[key] = Math.round((row.norm_percent || 0) * 100);
+            (point as any)[`${key}:raw`] = row.raw_value ?? null;
+            (point as any)[`${key}:target`] = row.norm_target ?? null;
           }
         }
 
