@@ -17,9 +17,7 @@ export function Health() {
         </CardHeader>
         <CardContent>
           <pre className="rounded-lg bg-muted p-4 overflow-auto">
-            <code className="text-sm">
-              {JSON.stringify(healthData, null, 2)}
-            </code>
+            <code className="text-sm">{JSON.stringify(healthData, null, 2)}</code>
           </pre>
         </CardContent>
       </Card>
