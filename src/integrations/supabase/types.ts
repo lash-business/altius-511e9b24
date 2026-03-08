@@ -169,18 +169,24 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          recorded_height_value_in: number | null
+          recorded_weight_value_lb: number | null
           test_date: string
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
+          recorded_height_value_in?: number | null
+          recorded_weight_value_lb?: number | null
           test_date: string
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
+          recorded_height_value_in?: number | null
+          recorded_weight_value_lb?: number | null
           test_date?: string
           user_id?: string | null
         }
