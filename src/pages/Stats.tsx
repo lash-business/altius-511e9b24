@@ -10,8 +10,10 @@ import { RecentTestsChart } from "@/components/stats/RecentTestsChart";
 import { StrengthProfileChart } from "@/components/stats/StrengthProfileChart";
 import { MuscleSymmetryProfileChart } from "@/components/stats/MuscleSymmetryProfileChart";
 import { StrengthProgressChart, StrengthProgressPoint } from "@/components/stats/StrengthProgressChart";
+import { FocusAreasDetailDialog } from "@/components/stats/FocusAreasDetailDialog";
+import { Button } from "@/components/ui/button";
 
-interface StrengthData {
+export interface StrengthData {
   muscle_group: string;
   left_right: string;
   relative_score: number;
@@ -23,7 +25,7 @@ interface StrengthData {
   raw_value?: number | null;
 }
 
-interface SymmetryData {
+export interface SymmetryData {
   "Muscle Group": string;
   "Measurement Name": string | null;
   "Left Raw": number;
@@ -32,7 +34,7 @@ interface SymmetryData {
   "Relative Score": number;
 }
 
-interface BalanceData {
+export interface BalanceData {
   muscle_group: string;
   measurement_name: string | null;
   muscle1: string;
@@ -49,9 +51,10 @@ interface TrendPoint {
   normPercent: number;
 }
 
-interface ImpactData {
+export interface ImpactData {
   measurement_name: string | null;
   muscle_group: string | null;
+  category: string | null;
   impact: string | null;
   risks: string | null;
 }
@@ -80,6 +83,7 @@ export function Stats() {
   const [trendData, setTrendData] = useState<TrendPoint[]>([]);
   const [strengthProgressData, setStrengthProgressData] = useState<StrengthProgressPoint[]>([]);
   const [impactData, setImpactData] = useState<ImpactData[]>([]);
+  const [focusDetailOpen, setFocusDetailOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -137,7 +141,7 @@ export function Stats() {
 
       const { data: impact, error: impactError } = await supabase
         .from("impact")
-        .select("measurement_name, muscle_group, impact, risks");
+        .select("measurement_name, muscle_group, category, impact, risks");
 
       if (impactError) throw impactError;
       setImpactData((impact as ImpactData[]) || []);
@@ -578,6 +582,9 @@ export function Stats() {
             <p className="text-sm text-muted-foreground">
               Start with these priorities before adding more volume or intensity.
             </p>
+            <Button variant="outline" size="sm" className="w-fit mt-1" onClick={() => setFocusDetailOpen(true)}>
+              Learn More
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
@@ -630,6 +637,14 @@ export function Stats() {
           </CardContent>
         </Card>
       )}
+      <FocusAreasDetailDialog
+        open={focusDetailOpen}
+        onOpenChange={setFocusDetailOpen}
+        impactData={impactData}
+        strengthData={strengthData}
+        symmetryData={symmetryData}
+        balanceData={balanceData}
+      />
       {/* Strength progress over time */}
       {strengthProgressData.length > 1 && (
         <Card className="border-2">
