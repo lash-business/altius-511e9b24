@@ -12,6 +12,7 @@ import { MuscleSymmetryProfileChart } from "@/components/stats/MuscleSymmetryPro
 import { StrengthProgressChart, StrengthProgressPoint } from "@/components/stats/StrengthProgressChart";
 import { FocusAreasDetailDialog } from "@/components/stats/FocusAreasDetailDialog";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface StrengthData {
   muscle_group: string;
@@ -72,14 +73,19 @@ interface Issue {
   description: string;
 }
 
+interface TestOption {
+  id: string;
+  test_date: string;
+}
+
 export function Stats() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [strengthData, setStrengthData] = useState<StrengthData[]>([]);
   const [symmetryData, setSymmetryData] = useState<SymmetryData[]>([]);
   const [balanceData, setBalanceData] = useState<BalanceData[]>([]);
-  const [latestTestId, setLatestTestId] = useState<string | null>(null);
-  const [latestTestDate, setLatestTestDate] = useState<string | null>(null);
+  const [allTests, setAllTests] = useState<TestOption[]>([]);
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
   const [trendData, setTrendData] = useState<TrendPoint[]>([]);
   const [strengthProgressData, setStrengthProgressData] = useState<StrengthProgressPoint[]>([]);
   const [impactData, setImpactData] = useState<ImpactData[]>([]);
@@ -87,69 +93,85 @@ export function Stats() {
 
   useEffect(() => {
     if (!user) return;
-    fetchLatestTestData(user.id);
+    fetchAllTests(user.id);
     fetchTrendData(user.id);
     fetchStrengthProgress(user.id);
+    fetchImpactData();
   }, [user]);
 
-  const fetchLatestTestData = async (userId: string) => {
+  useEffect(() => {
+    if (!user || !selectedTestId) return;
+    fetchTestData(user.id, selectedTestId);
+  }, [selectedTestId]);
+
+  const fetchAllTests = async (userId: string) => {
     try {
-      // Get the most recent test
-      const { data: testData, error: testError } = await supabase
+      const { data: tests, error } = await supabase
         .from("tests")
         .select("id, test_date")
         .eq("user_id", userId)
-        .order("test_date", { ascending: false })
-        .limit(1)
-        .single();
+        .order("test_date", { ascending: false });
 
-      if (testError) throw testError;
-      if (!testData) {
+      if (error) throw error;
+      if (!tests || tests.length === 0) {
         setLoading(false);
         return;
       }
 
-      setLatestTestId(testData.id);
-      setLatestTestDate(testData.test_date as string);
+      const typed = tests as TestOption[];
+      setAllTests(typed);
+      setSelectedTestId(typed[0].id);
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+      setLoading(false);
+    }
+  };
 
-      // Fetch strength data
+  const fetchTestData = async (userId: string, testId: string) => {
+    try {
+      setLoading(true);
+
       const { data: strength, error: strengthError } = await supabase
         .from("v_strength" as any)
         .select("*")
-        .eq("test_id", testData.id);
+        .eq("test_id", testId);
 
       if (strengthError) throw strengthError;
       setStrengthData((strength as any) || []);
 
-      // Fetch symmetry data
       const { data: symmetry, error: symmetryError } = await supabase
         .from("v_symmetry" as any)
         .select("*")
-        .eq("Test ID", testData.id);
+        .eq("Test ID", testId);
 
       if (symmetryError) throw symmetryError;
       setSymmetryData((symmetry as any) || []);
 
-      // Fetch balance data
       const { data: balance, error: balanceError } = await supabase
         .from("v_balance" as any)
         .select("*")
-        .eq("test_id", testData.id);
+        .eq("test_id", testId);
 
       if (balanceError) throw balanceError;
       setBalanceData((balance as any) || []);
 
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching test data:", error);
+      setLoading(false);
+    }
+  };
+
+  const fetchImpactData = async () => {
+    try {
       const { data: impact, error: impactError } = await supabase
         .from("impact")
         .select("measurement_name, muscle_group, category, impact, risks");
 
       if (impactError) throw impactError;
       setImpactData((impact as ImpactData[]) || []);
-
-      setLoading(false);
     } catch (error) {
-      console.error("Error fetching test data:", error);
-      setLoading(false);
+      console.error("Error fetching impact data:", error);
     }
   };
 
@@ -341,7 +363,7 @@ export function Stats() {
     );
   }
 
-  if (!latestTestId || strengthData.length === 0) {
+  if (allTests.length === 0 || strengthData.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12">
         <Card className="border-2">
@@ -544,6 +566,27 @@ export function Stats() {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24 space-y-8">
+      {allTests.length > 1 && (
+        <div className="flex items-center gap-3">
+          <Select value={selectedTestId ?? undefined} onValueChange={setSelectedTestId}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Select a test date" />
+            </SelectTrigger>
+            <SelectContent>
+              {allTests.map((t, i) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {new Date(t.test_date).toLocaleDateString()}
+                  {i === 0 ? " (Most Recent)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedTestId !== allTests[0]?.id && (
+            <Badge variant="outline">Viewing past test</Badge>
+          )}
+        </div>
+      )}
+
       {/* Primary focus: Strength Profile */}
       <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
         <CardHeader>
@@ -555,12 +598,19 @@ export function Stats() {
                 performance and fewer injuries.
               </p>
             </div>
-            {latestTestDate && (
-              <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
-                <span className="font-medium text-muted-foreground">Latest strength test:</span>
-                <span className="font-semibold">{new Date(latestTestDate).toLocaleDateString()}</span>
-              </div>
-            )}
+            {selectedTestId && (() => {
+              const selectedTest = allTests.find((t) => t.id === selectedTestId);
+              if (!selectedTest) return null;
+              const isLatest = selectedTestId === allTests[0]?.id;
+              return (
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-background/80 px-3 py-1 border text-xs sm:text-sm">
+                  <span className="font-medium text-muted-foreground">
+                    {isLatest ? "Latest strength test:" : "Viewing test from:"}
+                  </span>
+                  <span className="font-semibold">{new Date(selectedTest.test_date).toLocaleDateString()}</span>
+                </div>
+              );
+            })()}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

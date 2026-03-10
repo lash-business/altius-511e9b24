@@ -178,6 +178,8 @@ export function Onboarding() {
           user_id: user.id,
           // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
           test_date: formatDate(data.testDate, "yyyy-MM-dd"),
+          recorded_height_value_in: totalHeightInches,
+          recorded_weight_value_lb: parseInt(data.weight),
         })
         .select()
         .single();
