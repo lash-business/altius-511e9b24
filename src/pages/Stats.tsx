@@ -580,13 +580,13 @@ export function Stats() {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {topIssues.map((issue, idx) => (
                 <div
                   key={`${issue.type}-${issue.muscleKey}-${idx}`}
-                  className="p-3 rounded-lg border bg-background/60 flex flex-col gap-2"
+                  className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3"
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
                       className={
@@ -600,17 +600,17 @@ export function Stats() {
                       {issue.type}
                     </Badge>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{issue.muscleLabel}</p>
-                    <p className="text-xs text-muted-foreground">{issue.description}</p>
+                  <div className="space-y-2">
+                    <p className="text-base font-semibold">{issue.muscleLabel}</p>
+                    <p className="text-sm text-muted-foreground">{issue.description}</p>
                     {(() => {
                       const impactInfo = getImpactForIssue(issue);
                       if (!impactInfo) return null;
                       return (
-                        <div className="mt-2 space-y-1.5 text-xs border-l-2 border-primary/30 pl-2">
+                        <div className="mt-1 space-y-2 text-sm border-l-2 border-primary/30 pl-3">
                           {impactInfo.impact && (
                             <p className="text-foreground/90">
-                              <span className="font-semibold">What you'll gain:</span>{" "}
+                              <span className="font-semibold">By training this:</span>{" "}
                               {impactInfo.impact}
                             </p>
                           )}
