@@ -68,6 +68,36 @@ export type Database = {
         }
         Relationships: []
       }
+      impact: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          impact: string | null
+          measurement_name: string | null
+          muscle_group: Database["public"]["Enums"]["muscle_group_enum"] | null
+          risks: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          impact?: string | null
+          measurement_name?: string | null
+          muscle_group?: Database["public"]["Enums"]["muscle_group_enum"] | null
+          risks?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          impact?: string | null
+          measurement_name?: string | null
+          muscle_group?: Database["public"]["Enums"]["muscle_group_enum"] | null
+          risks?: string | null
+        }
+        Relationships: []
+      }
       measurements: {
         Row: {
           created_at: string | null
