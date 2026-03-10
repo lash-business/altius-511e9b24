@@ -158,21 +158,35 @@ export function Test() {
 
       const age = Math.floor((new Date().getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 
-      const { error: userError } = await supabase
-        .from("users")
-        .update({
-          height_value_in: totalHeightInches,
-          weight_value_lb: weightLb,
-        })
-        .eq("id", user.id);
-      if (userError) throw userError;
+      const newTestDate = formatDate(data.testDate, "yyyy-MM-dd");
+
+      const { data: latestTest } = await supabase
+        .from("tests")
+        .select("test_date")
+        .eq("user_id", user.id)
+        .order("test_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      const isLatestTest = !latestTest || newTestDate >= latestTest.test_date;
+
+      if (isLatestTest) {
+        const { error: userError } = await supabase
+          .from("users")
+          .update({
+            height_value_in: totalHeightInches,
+            weight_value_lb: weightLb,
+          })
+          .eq("id", user.id);
+        if (userError) throw userError;
+      }
 
       const { data: testRow, error: testError } = await supabase
         .from("tests")
         .insert({
           user_id: user.id,
           // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
-          test_date: formatDate(data.testDate, "yyyy-MM-dd"),
+          test_date: newTestDate,
           recorded_height_value_in: totalHeightInches,
           recorded_weight_value_lb: weightLb,
         })

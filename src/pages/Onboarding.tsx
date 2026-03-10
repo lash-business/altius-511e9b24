@@ -156,17 +156,31 @@ export function Onboarding() {
       
       // Calculate total height in inches
       const totalHeightInches = parseInt(data.heightFeet) * 12 + parseInt(data.heightInches);
+      const newTestDate = formatDate(data.testDate, "yyyy-MM-dd");
 
-      // Update user profile
+      const { data: latestTest } = await supabase
+        .from("tests")
+        .select("test_date")
+        .eq("user_id", user.id)
+        .order("test_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      const isLatestTest = !latestTest || newTestDate >= latestTest.test_date;
+
+      // Always update profile fields; only update height/weight if this is the most recent test
+      const userUpdate: Record<string, unknown> = {
+        birth_date: formatDate(data.birthDate, "yyyy-MM-dd"),
+        gender: data.gender as "male" | "female",
+      };
+      if (isLatestTest) {
+        userUpdate.height_value_in = totalHeightInches;
+        userUpdate.weight_value_lb = parseInt(data.weight);
+      }
+
       const { error: userError } = await supabase
         .from("users")
-        .update({
-          // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
-          birth_date: formatDate(data.birthDate, "yyyy-MM-dd"),
-          height_value_in: totalHeightInches,
-          weight_value_lb: parseInt(data.weight),
-          gender: data.gender as "male" | "female",
-        })
+        .update(userUpdate)
         .eq("id", user.id);
 
       if (userError) throw userError;
@@ -176,8 +190,7 @@ export function Onboarding() {
         .from("tests")
         .insert({
           user_id: user.id,
-          // Store as local calendar date (yyyy-MM-dd) to avoid timezone day-shift.
-          test_date: formatDate(data.testDate, "yyyy-MM-dd"),
+          test_date: newTestDate,
           recorded_height_value_in: totalHeightInches,
           recorded_weight_value_lb: parseInt(data.weight),
         })
