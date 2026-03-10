@@ -285,6 +285,50 @@ export function Stats() {
     );
   };
 
+  const getScoresForIssue = (issue: Issue): { label: string; value: string }[] => {
+    const name = issue.measurementName?.toLowerCase() ?? "";
+
+    if (issue.type === "Strength") {
+      const left = strengthData.find(
+        (s) => s.left_right === "left" && s.measurement_name?.toLowerCase().includes(name),
+      );
+      const right = strengthData.find(
+        (s) => s.left_right === "right" && s.measurement_name?.toLowerCase().includes(name),
+      );
+      if (!left && !right) return [];
+      return [
+        { label: "Left", value: left ? `${Math.round((left.norm_percent ?? 0) * 100)}%` : "—" },
+        { label: "Right", value: right ? `${Math.round((right.norm_percent ?? 0) * 100)}%` : "—" },
+      ];
+    }
+
+    if (issue.type === "Symmetry") {
+      const match = symmetryData.find((s) =>
+        s["Measurement Name"]?.toLowerCase().includes(name),
+      );
+      if (!match) return [];
+      return [
+        { label: "Left", value: `${match["Left Raw"]} lbs` },
+        { label: "Right", value: `${match["Right Raw"]} lbs` },
+      ];
+    }
+
+    if (issue.type === "Balance") {
+      const match = balanceData.find(
+        (b) =>
+          b.measurement_name?.toLowerCase() === name &&
+          b.muscle_group === issue.muscleGroup,
+      );
+      if (!match) return [];
+      return [
+        { label: getMuscleDisplayName(match.muscle1), value: `${Math.round((match.norm_percent1 ?? 0) * 100)}%` },
+        { label: getMuscleDisplayName(match.muscle2), value: `${Math.round((match.norm_percent2 ?? 0) * 100)}%` },
+      ];
+    }
+
+    return [];
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
@@ -588,42 +632,65 @@ export function Stats() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
-              {topIssues.map((issue, idx) => (
-                <div
-                  key={`${issue.type}-${issue.muscleKey}-${idx}`}
-                  className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-muted-foreground border-muted-foreground/40">
-                      {issue.type}
-                    </Badge>
+              {topIssues.map((issue, idx) => {
+                const scores = getScoresForIssue(issue);
+                const impactInfo = getImpactForIssue(issue);
+                return (
+                  <div
+                    key={`${issue.type}-${issue.muscleKey}-${idx}`}
+                    className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={
+                          issue.type === "Strength"
+                            ? "text-blue-500 border-blue-500/40"
+                            : issue.type === "Symmetry"
+                              ? "text-teal-500 border-teal-500/40"
+                              : "text-violet-500 border-violet-500/40"
+                        }
+                      >
+                        {issue.type}
+                      </Badge>
+                      <span className="text-base font-semibold">{issue.muscleLabel}</span>
+                    </div>
+
+                    {scores.length > 0 && (
+                      <div className="flex items-center gap-3 text-sm">
+                        {scores.map((s) => (
+                          <span
+                            key={s.label}
+                            className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 font-medium"
+                          >
+                            {s.label}
+                            <span className="text-foreground font-semibold">{s.value}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground">{issue.description}</p>
+
+                    {impactInfo && (
+                      <div className="space-y-2 text-sm border-l-2 border-primary/30 pl-3">
+                        {impactInfo.impact && (
+                          <p className="text-foreground/90">
+                            <span className="font-semibold">By training this:</span>{" "}
+                            {impactInfo.impact}
+                          </p>
+                        )}
+                        {impactInfo.risks && (
+                          <p className="text-muted-foreground">
+                            <span className="font-medium">Why it's important:</span>{" "}
+                            {impactInfo.risks}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-base font-semibold">{issue.muscleLabel}</p>
-                    <p className="text-sm text-muted-foreground">{issue.description}</p>
-                    {(() => {
-                      const impactInfo = getImpactForIssue(issue);
-                      if (!impactInfo) return null;
-                      return (
-                        <div className="mt-1 space-y-2 text-sm border-l-2 border-primary/30 pl-3">
-                          {impactInfo.impact && (
-                            <p className="text-foreground/90">
-                              <span className="font-semibold">By training this:</span>{" "}
-                              {impactInfo.impact}
-                            </p>
-                          )}
-                          {impactInfo.risks && (
-                            <p className="text-muted-foreground">
-                              <span className="font-medium">Why it's important:</span>{" "}
-                              {impactInfo.risks}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

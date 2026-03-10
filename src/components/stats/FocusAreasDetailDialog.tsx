@@ -28,7 +28,11 @@ function getMuscle(key: string): string {
   return MUSCLE_NAMES[key] ?? key;
 }
 
-const BADGE_CLASS = "text-muted-foreground border-muted-foreground/40 w-fit";
+function badgeClass(category: string): string {
+  if (category === "Strength") return "text-blue-500 border-blue-500/40 w-fit";
+  if (category === "Symmetry") return "text-teal-500 border-teal-500/40 w-fit";
+  return "text-violet-500 border-violet-500/40 w-fit";
+}
 
 function findImpact(
   impactData: ImpactData[],
@@ -203,7 +207,7 @@ export function FocusAreasDetailDialog({
       category: "Strength",
       cards: strengthCards.map((c, i) => (
         <div key={`str-${i}`} className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3">
-          <Badge variant="outline" className={BADGE_CLASS}>Strength</Badge>
+          <Badge variant="outline" className={badgeClass("Strength")}>Strength</Badge>
           <div className="space-y-2">
             <p className="text-base font-semibold">{c.label}</p>
             <ScorePills items={[
@@ -222,7 +226,7 @@ export function FocusAreasDetailDialog({
       category: "Symmetry",
       cards: symmetryCards.map((c, i) => (
         <div key={`sym-${i}`} className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3">
-          <Badge variant="outline" className={BADGE_CLASS}>Symmetry</Badge>
+          <Badge variant="outline" className={badgeClass("Symmetry")}>Symmetry</Badge>
           <div className="space-y-2">
             <p className="text-base font-semibold">{c.label}</p>
             <ScorePills items={[
@@ -241,7 +245,7 @@ export function FocusAreasDetailDialog({
       category: "Balance",
       cards: balanceCards.map((c, i) => (
         <div key={`bal-${i}`} className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3">
-          <Badge variant="outline" className={BADGE_CLASS}>Balance</Badge>
+          <Badge variant="outline" className={badgeClass("Balance")}>Balance</Badge>
           <div className="space-y-2">
             <p className="text-base font-semibold">{c.label}</p>
             <ScorePills items={[
