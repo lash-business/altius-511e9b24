@@ -25,6 +25,7 @@ interface StrengthData {
 
 interface SymmetryData {
   "Muscle Group": string;
+  "Measurement Name": string | null;
   "Left Raw": number;
   "Right Raw": number;
   "Percent Diff": number;
@@ -33,6 +34,7 @@ interface SymmetryData {
 
 interface BalanceData {
   muscle_group: string;
+  measurement_name: string | null;
   muscle1: string;
   muscle2: string;
   left_right: string;
@@ -47,11 +49,20 @@ interface TrendPoint {
   normPercent: number;
 }
 
+interface ImpactData {
+  measurement_name: string | null;
+  muscle_group: string | null;
+  impact: string | null;
+  risks: string | null;
+}
+
 type IssueType = "Strength" | "Symmetry" | "Balance";
 
 interface Issue {
   muscleKey: string;
   muscleLabel: string;
+  muscleGroup: string;
+  measurementName: string | null;
   type: IssueType;
   severityPoints: number;
   relativeScore: number;
@@ -68,6 +79,7 @@ export function Stats() {
   const [latestTestDate, setLatestTestDate] = useState<string | null>(null);
   const [trendData, setTrendData] = useState<TrendPoint[]>([]);
   const [strengthProgressData, setStrengthProgressData] = useState<StrengthProgressPoint[]>([]);
+  const [impactData, setImpactData] = useState<ImpactData[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -122,6 +134,13 @@ export function Stats() {
 
       if (balanceError) throw balanceError;
       setBalanceData((balance as any) || []);
+
+      const { data: impact, error: impactError } = await supabase
+        .from("impact")
+        .select("measurement_name, muscle_group, impact, risks");
+
+      if (impactError) throw impactError;
+      setImpactData((impact as ImpactData[]) || []);
 
       setLoading(false);
     } catch (error) {
@@ -249,6 +268,19 @@ export function Stats() {
     return names[name] || name;
   };
 
+  const getImpactForIssue = (issue: Issue): ImpactData | null => {
+    if (!issue.measurementName) return null;
+    const viewName = issue.measurementName.toLowerCase();
+    return (
+      impactData.find(
+        (row) =>
+          row.measurement_name &&
+          viewName.includes(row.measurement_name.toLowerCase()) &&
+          row.muscle_group === issue.muscleGroup,
+      ) ?? null
+    );
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
@@ -364,6 +396,8 @@ export function Stats() {
       result.push({
         muscleKey: `strength-${item.muscle_group}`,
         muscleLabel,
+        muscleGroup: item.muscle_group,
+        measurementName: item.measurement_name ?? null,
         type: "Strength",
         severityPoints,
         relativeScore: relScore,
@@ -390,6 +424,8 @@ export function Stats() {
       result.push({
         muscleKey: `symmetry-${item["Muscle Group"]}`,
         muscleLabel,
+        muscleGroup: item["Muscle Group"],
+        measurementName: item["Measurement Name"] ?? null,
         type: "Symmetry",
         severityPoints,
         relativeScore: relScore,
@@ -416,6 +452,8 @@ export function Stats() {
       result.push({
         muscleKey: `balance-${item.muscle_group}`,
         muscleLabel: ratioLabel,
+        muscleGroup: item.muscle_group,
+        measurementName: item.measurement_name ?? null,
         type: "Balance",
         severityPoints,
         relativeScore: relScore,
@@ -565,15 +603,26 @@ export function Stats() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">{issue.muscleLabel}</p>
                     <p className="text-xs text-muted-foreground">{issue.description}</p>
-                    <p className="text-xs text-muted-foreground italic">
-                      See details in{" "}
-                      {issue.type === "Strength"
-                        ? "Strength vs Target"
-                        : issue.type === "Symmetry"
-                          ? "Left vs Right Balance"
-                          : "Muscle Balance Ratios"}
-                      .
-                    </p>
+                    {(() => {
+                      const impactInfo = getImpactForIssue(issue);
+                      if (!impactInfo) return null;
+                      return (
+                        <div className="mt-1 space-y-1 text-xs text-muted-foreground border-t pt-2">
+                          {impactInfo.risks && (
+                            <p>
+                              <span className="font-medium text-foreground/80">Why it matters:</span>{" "}
+                              {impactInfo.risks}
+                            </p>
+                          )}
+                          {impactInfo.impact && (
+                            <p>
+                              <span className="font-medium text-foreground/80">Your upside:</span>{" "}
+                              {impactInfo.impact}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
