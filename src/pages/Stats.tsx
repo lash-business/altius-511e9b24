@@ -594,16 +594,7 @@ export function Stats() {
                   className="p-4 rounded-lg border bg-background/60 flex flex-col gap-3"
                 >
                   <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={
-                        issue.type === "Strength"
-                          ? "text-primary border-primary/40"
-                          : issue.type === "Symmetry"
-                            ? "text-amber-500 border-amber-500/40"
-                            : "text-destructive border-destructive/40"
-                      }
-                    >
+                    <Badge variant="outline" className="text-muted-foreground border-muted-foreground/40">
                       {issue.type}
                     </Badge>
                   </div>
