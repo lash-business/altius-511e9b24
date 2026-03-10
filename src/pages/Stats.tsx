@@ -656,6 +656,10 @@ export function Stats() {
                       <span className="text-base font-semibold">{issue.muscleLabel}</span>
                     </div>
 
+                    <p className="text-sm font-medium text-foreground rounded-md bg-muted/60 px-3 py-2">
+                      {issue.description}
+                    </p>
+
                     {scores.length > 0 && (
                       <div className="flex items-center gap-3 text-sm">
                         {scores.map((s) => (
@@ -669,8 +673,6 @@ export function Stats() {
                         ))}
                       </div>
                     )}
-
-                    <p className="text-xs text-muted-foreground">{issue.description}</p>
 
                     {impactInfo && (
                       <div className="space-y-2 text-sm border-l-2 border-primary/30 pl-3">
