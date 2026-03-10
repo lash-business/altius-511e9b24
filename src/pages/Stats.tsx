@@ -656,7 +656,7 @@ export function Stats() {
                       <span className="text-base font-semibold">{issue.muscleLabel}</span>
                     </div>
 
-                    <p className="text-sm font-medium text-foreground rounded-md bg-muted/60 px-3 py-2">
+                    <p className="text-sm font-semibold text-foreground">
                       {issue.description}
                     </p>
 
