@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, Info, Pause, Play } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, ChevronLeft, ChevronRight, Dumbbell, Pause, Play, Target, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -488,22 +488,35 @@ export function Workout() {
   };
   const renderDescriptionPreview = () => {
     if (!activeExercise) return null;
-    const parts = [activeExercise.equipment, activeExercise.setup, activeExercise.queues].filter(Boolean).join(" ");
-    if (!parts) return null;
+    const hasEquipment = !!activeExercise.equipment;
+    const hasSetup = !!activeExercise.setup;
+    const hasCues = !!activeExercise.queues;
+    if (!hasEquipment && !hasSetup && !hasCues) return null;
+
     return (
       <button
         type="button"
         onClick={() => setIsDescriptionOpen(true)}
-        className="flex w-full items-start gap-3 rounded-xl border bg-muted/40 px-4 py-3 text-left"
+        className="group flex w-full items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10"
       >
-        <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background">
-          <Info className="h-4 w-4" />
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+          {hasEquipment && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm">
+              <Dumbbell className="h-3 w-3 text-primary" /> Equipment
+            </span>
+          )}
+          {hasSetup && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm">
+              <Target className="h-3 w-3 text-secondary" /> Setup
+            </span>
+          )}
+          {hasCues && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm">
+              <Zap className="h-3 w-3 text-accent" /> Cues
+            </span>
+          )}
         </div>
-        <div className="flex-1 space-y-1">
-          <p className="line-clamp-2 text-sm text-foreground">
-            {parts} <span className="font-semibold">…More</span>
-          </p>
-        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </button>
     );
   };
@@ -538,26 +551,41 @@ export function Workout() {
   };
   const renderDescriptionSheet = () => {
     if (!activeExercise) return null;
-    const lines: string[] = [];
-    if (activeExercise.equipment) {
-      lines.push(activeExercise.equipment);
-    }
-    if (activeExercise.setup) {
-      lines.push(activeExercise.setup);
-    }
-    if (activeExercise.queues) {
-      lines.push(activeExercise.queues);
-    }
-    if (lines.length === 0) return null;
+    const hasEquipment = !!activeExercise.equipment;
+    const hasSetup = !!activeExercise.setup;
+    const hasCues = !!activeExercise.queues;
+    if (!hasEquipment && !hasSetup && !hasCues) return null;
+
+    const sections = [
+      { key: "equipment", label: "Equipment", icon: Dumbbell, content: activeExercise.equipment, color: "text-primary" },
+      { key: "setup", label: "Setup", icon: Target, content: activeExercise.setup, color: "text-secondary" },
+      { key: "cues", label: "Coaching Cues", icon: Zap, content: activeExercise.queues, color: "text-accent" },
+    ].filter((s) => !!s.content);
+
     return (
       <Sheet open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
-        <SheetContent side="bottom" className="max-h-[55vh] overflow-y-auto">
-          <SheetHeader className="mb-2 flex flex-row items-center justify-between">
-            <SheetTitle className="text-lg font-semibold">Description</SheetTitle>
+        <SheetContent side="bottom" className="max-h-[60vh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="mb-4">
+            <SheetTitle className="text-lg font-bold tracking-tight">
+              Exercise Details
+            </SheetTitle>
           </SheetHeader>
-          <div className="space-y-4 text-sm leading-relaxed text-foreground">
-            {lines.map((line, idx) => (
-              <p key={idx}>{line}</p>
+          <div className="space-y-3 pb-2">
+            {sections.map((section) => (
+              <div
+                key={section.key}
+                className="rounded-xl border bg-muted/30 px-4 py-3"
+              >
+                <div className="mb-1.5 flex items-center gap-2">
+                  <section.icon className={cn("h-4 w-4", section.color)} />
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {section.label}
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">
+                  {section.content}
+                </p>
+              </div>
             ))}
           </div>
         </SheetContent>
