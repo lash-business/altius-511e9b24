@@ -607,17 +607,17 @@ export function Stats() {
                       const impactInfo = getImpactForIssue(issue);
                       if (!impactInfo) return null;
                       return (
-                        <div className="mt-1 space-y-1 text-xs text-muted-foreground border-t pt-2">
-                          {impactInfo.risks && (
-                            <p>
-                              <span className="font-medium text-foreground/80">Why it matters:</span>{" "}
-                              {impactInfo.risks}
+                        <div className="mt-2 space-y-1.5 text-xs border-l-2 border-primary/30 pl-2">
+                          {impactInfo.impact && (
+                            <p className="text-foreground/90">
+                              <span className="font-semibold">What you'll gain:</span>{" "}
+                              {impactInfo.impact}
                             </p>
                           )}
-                          {impactInfo.impact && (
-                            <p>
-                              <span className="font-medium text-foreground/80">Your upside:</span>{" "}
-                              {impactInfo.impact}
+                          {impactInfo.risks && (
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">Why it's important:</span>{" "}
+                              {impactInfo.risks}
                             </p>
                           )}
                         </div>
