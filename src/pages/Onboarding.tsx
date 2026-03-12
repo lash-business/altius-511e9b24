@@ -164,7 +164,7 @@ export function Onboarding() {
         .eq("user_id", user.id)
         .order("test_date", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const isLatestTest = !latestTest || newTestDate >= latestTest.test_date;
 

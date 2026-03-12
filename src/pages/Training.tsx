@@ -29,7 +29,7 @@ interface WorkoutSummary {
 
 type TrainingViewState =
   | { status: "loading" }
-  | { status: "blank"; reason: "noTest" | "allCompleted" }
+  | { status: "blank"; reason: "noTest" | "allCompleted" | "error" }
   | { status: "ready"; data: WorkoutSummary };
 
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
@@ -213,7 +213,7 @@ export function Training() {
           description: "Please try again or upload a new test.",
           variant: "destructive",
         });
-        setViewState({ status: "blank", reason: "noTest" });
+        setViewState({ status: "blank", reason: "error" });
       }
     };
 
@@ -242,12 +242,19 @@ export function Training() {
     navigate("/workout");
   };
 
-  const renderBlankState = (reason: "noTest" | "allCompleted") => {
-    const title = reason === "allCompleted" ? "Upload your next test" : "Upload your first test";
+  const renderBlankState = (reason: "noTest" | "allCompleted" | "error") => {
+    const title =
+      reason === "allCompleted"
+        ? "Upload your next test"
+        : reason === "error"
+          ? "Something went wrong"
+          : "Upload your first test";
     const description =
       reason === "allCompleted"
         ? "You’ve completed all workouts for your latest test. Upload a new test to get your next training block."
-        : "Upload a strength test to generate a personalized training plan.";
+        : reason === "error"
+          ? "Failed to load your training data. Please try again or upload a new test."
+          : "Upload a strength test to generate a personalized training plan.";
 
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
