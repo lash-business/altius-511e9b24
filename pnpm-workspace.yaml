@@ -1,0 +1,21 @@
+# Supply chain security settings
+
+# Block all install/postinstall scripts by default
+ignoreScripts: true
+
+# Require explicit approval for packages that need build scripts
+strictDepBuilds: true
+
+# Only allow build scripts for packages you've explicitly approved
+# Add packages here as needed, e.g.: esbuild: true
+allowBuilds: {}
+
+# Don't install packages published less than 24 hours ago
+# Gives time for malicious versions to be detected and pulled
+minimumReleaseAge: 1440
+
+# Block transitive dependencies from using git repos or tarball URLs
+blockExoticSubdeps: true
+
+# Fail if a package's trust level drops (e.g. loses provenance signatures)
+trustPolicy: no-downgrade
